@@ -17,6 +17,7 @@ public:
     SpriteID textureID;
     Rect bounds;
     bool worldSpace;  // If false, this sprite is drawn in screen space instead of world space
+    uint8_t layer;    // Drawing layer, lower layers drawn first
 private:
 };
 

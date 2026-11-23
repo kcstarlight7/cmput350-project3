@@ -21,6 +21,8 @@
 
 namespace ECSEngine {
 
+enum tSceneReturn { kSceneContinue, kSceneDone };
+
 template <typename... Components>
 class SceneView {
 public:
@@ -71,9 +73,8 @@ private:
 };
 
 template <typename... Components>
-ECSScene<Components...>::ECSScene(unsigned int width, unsigned int height,
-                                    const std::string& name)
-    : mWindowManager(width, height, name) {}
+ECSScene<Components...>::ECSScene(std::shared_ptr<sf::RenderWindow> mWindow)
+    : mWindowManager(mWindow) {}
 
 template <typename... Components>
 ECSScene<Components...>::~ECSScene() {}
