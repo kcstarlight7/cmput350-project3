@@ -1,7 +1,6 @@
 #pragma once
 
 #include <vector>
-// #include "ECSEngine.h"
 
 namespace ECSEngine {
 
@@ -14,7 +13,8 @@ template <typename... Components>
 class System {
 public:
     virtual ~System() = default;
-    virtual tSystemReturn Run(EngineView<Components...>* scene) = 0;
+    virtual tSystemReturn Run(EngineView<Components...>* engine,
+                              SceneView<Components...>* scene) = 0;
     virtual const std::string& GetName() const = 0;
 };
 
