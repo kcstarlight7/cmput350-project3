@@ -35,7 +35,7 @@ public:
 template <typename... Components>
 class ECSScene : public SceneView<Components...> {
 public:
-    ECSScene(unsigned int width, unsigned int height, const std::string& name);
+    ECSScene(std::shared_ptr<sf::RenderWindow> mWindow);
     ~ECSScene();
 
     void Run();

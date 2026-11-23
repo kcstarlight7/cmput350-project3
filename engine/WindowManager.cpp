@@ -3,38 +3,83 @@
 namespace ECSEngine {
 
 WindowManager::WindowManager(unsigned int width, unsigned int height, const std::string& title)
-    : mWindow(std::make_shared<sf::RenderWindow>(sf::VideoMode({width, height}), title)) {}
+    : mWindow(std::make_shared<sf::RenderWindow>(sf::VideoMode({width, height}), title)),
+      mWindowSize(width, height) {
+    mWindow->setFramerateLimit(framesPerSecond);
+    // todo disable key repeat and implement own
+    mWindow->setKeyRepeatEnabled(false);
+    mWorldUnitsPerPixel = 1;
+    // SetCamera(Point2D(mWindowSize.x / 2, mWindowSize.y / 2),
+    //           Point2D(mWindowSize.x / 2, mWindowSize.y / 2));
+}
 
 std::shared_ptr<sf::RenderWindow> WindowManager::GetWindow() const { return mWindow; }
 
-Rect WindowManager::GetWindowBounds() const { return Rect(); }
+Rect WindowManager::GetWindowBounds() const { return Rect({0, 0}, mWindowSize.x, mWindowSize.y); }
 
-void WindowManager::DebugDrawRect(const Rect& r, int red, int green, int blue, int alpha) {}
+void WindowManager::DebugDrawRect(const Rect& r, int red, int green, int blue, int alpha) {
+    sf::RectangleShape drawingRect({r.width, r.height});
+    drawingRect.setPosition({r.topLeft.x, r.topLeft.y});
+    drawingRect.setFillColor(sf::Color(red, green, blue, alpha));
+}
 
-void WindowManager::DebugFrameRect(const Rect& r, int red, int green, int blue, int alpha) {}
+void WindowManager::DebugFrameRect(const Rect& r, int red, int green, int blue, int alpha) {
+    sf::RectangleShape drawingRect({r.width, r.height});
+    drawingRect.setPosition({r.topLeft.x, r.topLeft.y});
+    drawingRect.setOutlineThickness(5.f);
+    drawingRect.setOutlineColor(sf::Color(red, green, blue, alpha));
+    drawingRect.setFillColor(sf::Color::Transparent);
+    mWindow->draw(drawingRect);
+}
 
-Rect WindowManager::WindowToWorld(const Rect& rect) const { return Rect(); }
+Rect WindowManager::WindowToWorld(const Rect& rect) const {
+    return Rect(WindowToWorld(rect.topLeft), rect.width * mWorldUnitsPerPixel,
+                rect.height * mWorldUnitsPerPixel);
+}
 
-Point2D WindowManager::WindowToWorld(const Point2D& pt) const { return Point2D(); }
+Point2D WindowManager::WindowToWorld(const Point2D& pt) const {
+    sf::Vector2f viewCenterWindow =
+        sf::Vector2f(mViewCenterWorld.x, mViewCenterWorld.y) / mWorldUnitsPerPixel;
+    sf::Vector2f originViewCenter = mWindowSize * 0.5f;
+    sf::Vector2f movementDiff = viewCenterWindow - originViewCenter;
+    sf::Vector2f result = (sf::Vector2f(pt.x, pt.y) + movementDiff) * mWorldUnitsPerPixel;
+    return Point2D(result.x, result.y);
+}
 
-Rect WindowManager::WorldToWindow(const Rect& rect) const { return Rect(); }
+Rect WindowManager::WorldToWindow(const Rect& rect) const {
+    return Rect(WorldToWindow(rect.topLeft), rect.width / mWorldUnitsPerPixel,
+                rect.height / mWorldUnitsPerPixel);
+}
 
-Point2D WindowManager::WorldToWindow(const Point2D& pt) const { return Point2D(); }
+Point2D WindowManager::WorldToWindow(const Point2D& pt) const {
+    sf::Vector2f viewCenterWindow =
+        sf::Vector2f(mViewCenterWorld.x, mViewCenterWorld.y) / mWorldUnitsPerPixel;
+    sf::Vector2f originViewCenter = mWindowSize * 0.5f;
+    sf::Vector2f movementDiff = viewCenterWindow - originViewCenter;
+    sf::Vector2f result = sf::Vector2f(pt.x, pt.y) / mWorldUnitsPerPixel - movementDiff;
 
-void WindowManager::SetCamera(const Point2D& worldPt, const Point2D& screenPt) {}
+    return Point2D(result.x, result.y);
+}
 
-Point2D WindowManager::GetWorldCenter() const { return Point2D(); }
+void WindowManager::SetCamera(const Point2D& worldPt, const Point2D& screenPt) {
+    sf::Vector2f diff = mWindowSize * 0.5f * mWorldUnitsPerPixel;
+    mViewCenterWorld = worldPt - screenPt * mWorldUnitsPerPixel + Point2D(diff.x, diff.y);
+}
 
-float WindowManager::GetWorldScale() const { return 1; }
+Point2D WindowManager::GetWorldCenter() const { return mViewCenterWorld; }
 
-void WindowManager::SetWorldCenter(const Point2D& worldCenter) {}
+float WindowManager::GetWorldScale() const { return mWorldUnitsPerPixel; }
 
-void WindowManager::SetWorldScale(float worldUnitsPerPixel) {}
+void WindowManager::SetWorldCenter(const Point2D& worldCenter) { mViewCenterWorld = worldCenter; }
+
+void WindowManager::SetWorldScale(float worldUnitsPerPixel) {
+    mWorldUnitsPerPixel = worldUnitsPerPixel;
+}
 
 void WindowManager::SetWorldRect(const Rect& worldCameraRect) {}
 
-float WindowManager::WindowToWorld(float x) const { return 0; }
+float WindowManager::WindowToWorld(float x) const { return x / mWorldUnitsPerPixel; }
 
-float WindowManager::WorldToWindow(float x) const { return 0; }
+float WindowManager::WorldToWindow(float x) const { return x * mWorldUnitsPerPixel; }
 
 }  // namespace ECSEngine

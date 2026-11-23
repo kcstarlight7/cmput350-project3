@@ -1,5 +1,10 @@
 #pragma once
 
+#include <cmath>
+
+#include "EntityManager.h"
+#include "ScoreComponent.h"
+
 namespace ECSEngine {
 
 template <typename... Components>
@@ -10,7 +15,289 @@ public:
         return name;
     }
 
-    tSystemReturn Run(EngineView<Components...>* engine) override { return kContinue; }
+    tSystemReturn Run(EngineView<Components...>* engine) override {
+        EntityManager<Components...>& entityManager = engine->GetEntityManager();
+        WindowManager& windowManager = engine->GetWindowManager();
+
+        for (auto iterator1 = entityManager.cbegin(); iterator1 != entityManager.cend();
+             ++iterator1) {
+            // loops through all entities
+            auto currentID = iterator1->GetID();
+            if (entityManager.template HasComponent<CollisionComponent>(currentID) &&
+                entityManager.template HasComponent<LocationComponent>(
+                    currentID)) {  // able to collide
+                CollisionComponent& curIDCollisionComp =
+                    entityManager.template GetComponent<CollisionComponent>(currentID);
+
+                if (curIDCollisionComp.staticEntity) {
+                    continue;
+                }
+                uint8_t soundTrigger = 0;
+                if (curIDCollisionComp.onGround == 0) {
+                    soundTrigger = 1;
+                }
+                curIDCollisionComp.onCeiling = 0;
+                curIDCollisionComp.onGround = 0;
+                curIDCollisionComp.onLeftWall = 0;
+                curIDCollisionComp.onRightWall = 0;
+
+                LocationComponent& curIDLocationComp =
+                    entityManager.template GetComponent<LocationComponent>(currentID);
+
+                Rect curIDCollisionBox = curIDCollisionComp.collisionBox;
+                Rect curIDPrevCollisionBox = curIDCollisionComp.previousCollisionBox;
+                curIDCollisionBox.topLeft += curIDLocationComp.loc;
+
+                // std::cout << curIDCollisionBox.topLeft << "\n";
+
+                for (auto iterator2 = entityManager.cbegin(); iterator2 != entityManager.cend();
+                     ++iterator2) {
+                    auto otherID = iterator2->GetID();
+                    if (entityManager.template HasComponent<CollisionComponent>(otherID) &&
+                        entityManager.template HasComponent<LocationComponent>(otherID) &&
+                        currentID != otherID) {  // able to collide and not self
+                        // determine if collide on current frame:
+
+                        CollisionComponent& otherIDCollisionComp =
+                            entityManager.template GetComponent<CollisionComponent>(otherID);
+                        LocationComponent& otherIDLocationComp =
+                            entityManager.template GetComponent<LocationComponent>(otherID);
+
+                        Rect otherIDCollisionBox = otherIDCollisionComp.collisionBox;
+                        otherIDCollisionBox.topLeft += otherIDLocationComp.loc;
+
+                        /*
+                        if (!ComputeCollision(ent1CollisionBox,
+                                              ent2CollisionBox)) {  // return if not collide
+                            continue;
+                        }*/
+                        // Check for overlaps, mark in collision component (left/top/right/bottom)
+
+                        bool collide = ComputeCollision(curIDCollisionBox, otherIDCollisionBox);
+                        if (collide) {
+                            if (entityManager.GetEntityType(currentID) == "player" &&
+                                entityManager.GetEntityType(otherID) == "Star") {
+                                entityManager.template GetComponent<ScoreComponent>(currentID)
+                                    .score += 10;
+                                entityManager.RemoveEntity(otherID);
+                            }
+
+                            if (curIDCollisionBox.topLeft.y + curIDCollisionBox.height >
+                                    otherIDCollisionBox.topLeft.y &&
+                                curIDCollisionBox.topLeft.y < otherIDCollisionBox.topLeft.y) {
+                                float curBoxMidpt =
+                                    curIDCollisionBox.topLeft.x + curIDCollisionBox.width / 2;
+                                float otherBoxMidpt =
+                                    otherIDCollisionBox.topLeft.x + otherIDCollisionBox.width / 2;
+
+                                if (std::abs(otherBoxMidpt - curBoxMidpt) <
+                                    otherIDCollisionBox.width * 0.8f) {
+                                    curIDCollisionComp.onGround = 1;
+
+                                    entityManager
+                                        .template GetComponent<MovementComponent>(currentID)
+                                        .jumpCount = 0;
+
+                                    if (curIDPrevCollisionBox.topLeft.y <
+                                        curIDCollisionBox.topLeft.y) {
+                                        if (otherIDCollisionComp.staticEntity) {
+                                            curIDLocationComp.loc.y -=
+                                                curIDLocationComp.loc.y + curIDCollisionBox.height -
+                                                otherIDCollisionBox.topLeft.y;
+                                        }
+                                    }
+                                }
+                            }
+
+                            if (curIDCollisionBox.topLeft.y >
+                                otherIDCollisionBox.topLeft.y + otherIDCollisionBox.height * 0.8f) {
+                                float curBoxMidpt =
+                                    curIDCollisionBox.topLeft.x + curIDCollisionBox.width / 2;
+                                float otherBoxMidpt =
+                                    otherIDCollisionBox.topLeft.x + otherIDCollisionBox.width / 2;
+
+                                if (std::abs(otherBoxMidpt - curBoxMidpt) <
+                                    otherIDCollisionBox.width) {
+                                    curIDCollisionComp.onCeiling = 1;
+                                }
+                            } else
+
+                                if (curIDCollisionBox.topLeft.y + curIDCollisionBox.height >
+                                    otherIDCollisionBox.topLeft.y +
+                                        otherIDCollisionBox.height) {  // if at level with other
+                                if (curIDPrevCollisionBox.topLeft.x < curIDCollisionBox.topLeft.x) {
+                                    curIDCollisionComp.onRightWall = 1;
+                                    entityManager
+                                        .template GetComponent<MovementComponent>(currentID)
+                                        .jumpCount = 0;
+
+                                    if (otherIDCollisionComp.staticEntity) {
+                                        curIDLocationComp.loc.x -= curIDLocationComp.loc.x +
+                                                                   curIDCollisionBox.width -
+                                                                   otherIDCollisionBox.topLeft.x;
+                                    }
+                                }
+
+                                if (curIDPrevCollisionBox.topLeft.x > curIDCollisionBox.topLeft.x) {
+                                    curIDCollisionComp.onLeftWall = 1;
+                                    entityManager
+                                        .template GetComponent<MovementComponent>(currentID)
+                                        .jumpCount = 0;
+
+                                    if (otherIDCollisionComp.staticEntity) {
+                                        curIDLocationComp.loc.x -= curIDLocationComp.loc.x -
+                                                                   (otherIDCollisionBox.topLeft.x +
+                                                                    otherIDCollisionBox.width);
+                                    }
+                                }
+                            }
+
+                            if (entityManager.GetEntityType(currentID) == "player" &&
+                                entityManager.GetEntityType(otherID) == "Star") {
+                                entityManager.template GetComponent<ScoreComponent>(currentID)
+                                    .score += 10;
+                                entityManager.RemoveEntity(otherID);
+                                engine->GetSoundManager().GetSound("sfx_gem").play();
+                            }
+
+                            if (entityManager.GetEntityType(currentID) == "player") {
+                                CameraShake& camShakeComp =
+                                    entityManager.template GetComponent<CameraShake>(currentID);
+
+                                if ((std::abs(curIDCollisionBox.topLeft.y -
+                                              curIDPrevCollisionBox.topLeft.y) > 10 &&
+                                     entityManager.GetEntityType(otherID) == "MapPart") ||
+                                    curIDCollisionComp.onCeiling) {
+                                    camShakeComp.frameLimit = 15;
+                                    camShakeComp.offset.y = 3.f;
+
+                                    if (curIDCollisionComp.onGround) {
+                                        engine->GetSoundManager().GetSound("snow_footstep").play();
+                                    }
+                                } else if (std::abs(curIDCollisionBox.topLeft.x -
+                                                    curIDPrevCollisionBox.topLeft.x) > 10 &&
+                                           entityManager.GetEntityType(otherID) == "Wall") {
+                                    camShakeComp.frameLimit = 15;
+                                    camShakeComp.offset.x = 3.f;
+                                }
+                            }
+
+                            if (entityManager.GetEntityType(currentID) == "player" &&
+                                entityManager.GetEntityType(otherID) == "Spike") {
+                                if (entityManager.template HasComponent<RespawnComponent>(
+                                        currentID)) {
+                                    curIDLocationComp.loc =
+                                        entityManager
+                                            .template GetComponent<RespawnComponent>(currentID)
+                                            .loc +
+                                        Point2D(0.f, 50.f);
+                                    entityManager
+                                        .template GetComponent<MovementComponent>(currentID)
+                                        .velocity = {0.f, 0.f};
+                                }
+                            }
+                        }
+
+                        // draw red rect
+
+                        if (collide) {
+                            Point2D curIDDrawLoc =
+                                windowManager.WorldToWindow(curIDLocationComp.loc);
+                            Point2D otherIDDrawLoc =
+                                windowManager.WorldToWindow(otherIDLocationComp.loc);
+                            windowManager.DebugFrameRect(
+                                Rect(curIDDrawLoc, curIDCollisionComp.collisionBox.width,
+                                     curIDCollisionComp.collisionBox.height),
+                                255, 0, 0, 255);
+                            windowManager.DebugFrameRect(
+                                Rect(otherIDDrawLoc, otherIDCollisionComp.collisionBox.width,
+                                     otherIDCollisionComp.collisionBox.height),
+                                0, 255, 255, 255);
+                        }
+                    }
+                }
+
+                if (entityManager.GetEntityType(currentID) == "player" &&
+                    (curIDCollisionComp.onLeftWall || curIDCollisionComp.onRightWall) &&
+                    !curIDCollisionComp.onGround) {
+                    engine->GetSoundManager().GetSound("error").play();
+                }
+            }
+        }
+
+        return kContinue;
+    }
+
+private:
+    bool ComputeCollision(const Rect a, const Rect b) {
+        return a.topLeft.x < b.topLeft.x + b.width && a.topLeft.x + a.width > b.topLeft.x &&
+               a.topLeft.y < b.topLeft.y + b.height && a.topLeft.y + a.height > b.topLeft.y;
+    }
+
+    bool ComputeCollision(const Circle a, const Line b) {
+        Point2D closestPt = b.ClosestPoint(a.center);
+
+        return closestPt.Distance(a.center) < a.radius;
+    }
+
+    bool ComputeCollision(const Rect a, const Circle b) {
+        Line a1(a.topLeft, Point2D(a.topLeft.x + a.width, a.topLeft.y));
+        Line a2(a.topLeft, Point2D(a.topLeft.x, a.topLeft.y + a.height));
+        Line a3(Point2D(a.topLeft.x + a.width, a.topLeft.y),
+                Point2D(a.topLeft.x + a.width, a.topLeft.y + a.height));
+        Line a4(Point2D(a.topLeft.x, a.topLeft.y + a.height),
+                Point2D(a.topLeft.x + a.width, a.topLeft.y + a.height));
+
+        return a.IsInside(b.center) || ComputeCollision(b, a1) || ComputeCollision(b, a2) ||
+               ComputeCollision(b, a3) || ComputeCollision(b, a4);
+    }
+
+    bool ComputeCollision(const Rect a, const Line b, Point2D* crossPt) {
+        Point2D rectCenter(a.topLeft.x + (a.width / 2), a.topLeft.y + (a.height / 2));
+        // std::cout << rectCenter << "\n";
+        bool res = a.IsInside(b.ClosestPoint(rectCenter));
+        if (res) {
+            *crossPt = b.ClosestPoint(rectCenter);
+        }
+        return res;
+    }
+
+    bool ComputeCollision(const Circle a, const Circle b) {
+        return std::pow(b.center.x - a.center.x, 2) + std::pow(b.center.y - a.center.y, 2) <=
+               std::pow(a.radius + b.radius, 2);
+    }
+
+    bool ComputeCollision(const Circle a, const Circle b, Point2D* crossPt) {
+        crossPt = nullptr;
+        return ComputeCollision(a, b);
+    }
+
+    bool ComputeCollision(const Circle a, const Line b, Point2D* crossPt) {
+        Point2D closestPt = b.ClosestPoint(a.center);
+        crossPt->x = closestPt.x;
+        crossPt->y = closestPt.y;
+
+        return closestPt.Distance(a.center) < a.radius;
+    }
+
+    bool ComputeCollision(const Line a, const Line b, Point2D* crossPt) {
+        return a.Crosses(b, *crossPt);
+    }
+
+    bool ComputeCollision(const Circle a, const Rect b) { return ComputeCollision(b, a); }
+
+    bool ComputeCollision(const Circle a, const Rect b, Point2D* crossPt) {
+        crossPt = nullptr;
+        return ComputeCollision(b, a);
+    }
+
+    bool ComputeCollision(const Line a, const Rect b, Point2D* crossPt) {
+        return ComputeCollision(b, a, crossPt);
+    }
+
+    bool ComputeCollision(const Line a, const Circle b, Point2D* crossPt) {
+        return ComputeCollision(b, a, crossPt);
+    }
 };
 
 }  // namespace ECSEngine

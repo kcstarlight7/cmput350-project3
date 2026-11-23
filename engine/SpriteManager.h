@@ -12,12 +12,17 @@ using SpriteID = size_t;
 
 class SpriteManager {
 public:
-    SpriteManager() = default;
+    SpriteManager();
     ~SpriteManager() = default;
     [[nodiscard]] SpriteID RegisterTexture(const std::string& texturePath, const Rect& sourceRect);
     sf::Sprite& GetSprite(SpriteID id);
+    sf::Texture& GetTexture() { return mTexture; }
 
 private:
+    int mRowMinY, mRowMaxY, mColMinX;
+    sf::Texture mTexture;
+    std::unordered_map<std::string, SpriteID> mSpriteMap;
+    std::vector<sf::Sprite> mSprites;
 };
 
 }  // namespace ECSEngine

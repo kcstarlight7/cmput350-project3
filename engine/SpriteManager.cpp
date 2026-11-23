@@ -3,6 +3,8 @@
 namespace ECSEngine {
 
 SpriteID SpriteManager::RegisterTexture(const std::string& texturePath, const Rect& sourceRect) {
+    //TODO: load and copy the sprite into a single internal sprite sheet / texture
+
     return 0;
 }
 
