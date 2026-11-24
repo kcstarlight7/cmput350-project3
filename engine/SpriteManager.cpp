@@ -37,15 +37,16 @@ SpriteID SpriteManager::RegisterTexture(const std::string& texturePath, const Re
     sf::IntRect area({x, y}, {width, height});
     sf::Image resultImage(sf::Vector2u(width, height), sf::Color::White);
     resultImage.copy(initialImage, {0, 0}, area);
-
     mTexture.update(resultImage, sf::Vector2u(mColMinX, mRowMinY));
     sf::Sprite sprite(mTexture);
-    sprite.setTextureRect({{mColMinX, mRowMinY}, {width, height}});
+    sprite.setTextureRect(sf::IntRect({mColMinX, mRowMinY}, {width, height}));
+    std::cout << sprite.getTextureRect().size.y << "\n";
+    mSprites.push_back(sprite);
 
     mColMinX = mColMinX + width;
     mRowMaxY = std::max(mRowMaxY, mRowMaxY + height);
 
-    SpriteID id = mSprites.size();
+    SpriteID id = mSprites.size() - 1;
     mSpriteMap.insert(std::pair<std::string, SpriteID>(key, id));
 
     return id;

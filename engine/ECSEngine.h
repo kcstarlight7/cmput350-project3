@@ -59,7 +59,7 @@ void ECSEngine<Components...>::Run() {
         }
 
         tSceneReturn status = scene->DoOneFrame(this);
-
+        mWindowManager.GetWindow()->display();
         if (status == kSceneContinue) {
             continue;
         } else {

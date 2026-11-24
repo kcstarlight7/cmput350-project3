@@ -1,9 +1,6 @@
 #pragma once
 
 
-//#include "ECSEngine.h"
-
-
 namespace ECSEngine {
 
 enum tSceneReturn {
