@@ -51,7 +51,23 @@ ECSEngine<Components...>::~ECSEngine() {}
 
 template <typename... Components>
 void ECSEngine<Components...>::Run() {
-    //continually runs the top scene When all scenes are complete, it returns.
+    while (true) {
+        // continually runs the top scene When all scenes are complete, it returns.
+        std::shared_ptr<SceneView<Components...>> scene = GetScene();
+        if (!scene) {
+            return;
+        }
+
+        tSceneReturn status = scene->DoOneFrame(this);
+
+        if (status == kSceneContinue) {
+            continue;
+        } else {
+            PopScene();
+            break;
+        }
+    }
+    
 }
 
 }  // namespace ECSEngine
