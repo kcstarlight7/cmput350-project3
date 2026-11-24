@@ -37,7 +37,164 @@ std::string gResourcePath = "../assets/";
         ECSEngine::CameraShake, ECSEngine::ScoreComponent, ECSEngine::RespawnComponent
 using Engine = ECSEngine::ECSEngine<COMPONENTS>;
 
-void LoadMap(Engine& engine, const std::string& path, const std::string& file) {}
+static void LoadMap(Engine& engine, const std::string& path, const std::string& file) {
+    std::filesystem::path fullPath = std::filesystem::path(gResourcePath) / file;
+    // std::string fullPath = path + file;
+    // while (fullPath[0] == '.') {
+    // fullPath.erase(0, 1);
+    //}
+    // fullPath.erase(0, 1);
+    std::cout << "Path: " << fullPath << "\n";
+    std::cout << "Current path: " << std::filesystem::current_path() << "\n";
+    std::ifstream mapFile(fullPath);
+    if (!mapFile.is_open()) {
+        std::cout << "Failed to open map!\n";
+        return;
+    }
+    std::string line;
+    int dictionaryType;
+    bool spriteRead = false;
+    int currentLine = 0;
+    std::unordered_map<char, std::vector<std::string>> spriteDict;
+    float tileWidth = 0;
+    float tileHeight = 0;
+    int originX = 0;
+    int originY = 0;
+    int mapGridHeight = 0;
+    int mapGridWidth = 0;
+    while (std::getline(mapFile, line)) {
+        // std::cout << "Current line: " << line << "\n";
+        if (line.substr(0, 10) == "dictionary") {
+            if (line.substr(11, 1) == "1") {
+                dictionaryType = 1;
+            } else {
+                dictionaryType = 2;
+            }
+
+            // std::cout << "Read: dictionary type: " << dictionaryType << "\n";
+
+        } else if (line.substr(0, 3) == "map") {
+            spriteRead = true;
+            std::istringstream stream(line);
+            std::vector<std::string> coords;
+            std::string currentVar;
+            while (stream >> currentVar) {
+                coords.push_back(currentVar);
+            }
+            mapGridHeight = std::stoi(coords.back());
+            coords.pop_back();  // size height
+            mapGridWidth = std::stoi(coords.back());
+            coords.pop_back();  // size width
+            coords.pop_back();  //"size"
+            tileHeight = std::stoi(coords.back());
+            coords.pop_back();  // pops tile height
+            tileWidth = std::stoi(coords.back());
+            coords.pop_back();  // pops tile width
+            coords.pop_back();  //"tile"
+            originY = std::stoi(coords.back());
+            coords.pop_back();  // pops map origin y
+            originX = std::stoi(coords.back());
+
+            // std::cout << "Read: map \n"
+            //           << "map grid height: " << mapGridHeight << "\n"
+            //           << "map grid width: " << mapGridWidth << "\n"
+            //           << "tile height: " << tileHeight << "\n"
+            //           << "tile width: " << tileWidth << "\n"
+            //           << "originY: " << originY << "\n"
+            //           << "originX: " << originX << "\n";
+        } else if (!spriteRead) {
+            std::istringstream stream(line);
+            std::vector<std::string> currentLineContent;
+            std::string currentVar;
+            while (stream >> currentVar) {
+                currentLineContent.push_back(currentVar);
+            }
+            spriteDict.emplace(
+                currentLineContent[0][0],
+                std::vector<std::string>(currentLineContent.begin() + 1, currentLineContent.end()));
+
+        } else if (spriteRead) {
+            // load actual map
+            int currentChar = 0;
+            for (char sprite : line) {
+                if (spriteDict.contains(sprite)) {
+                    ECSEngine::LocationComponent location;
+                    location.loc = {originX + (tileWidth * currentChar),
+                                    originY + (tileHeight * currentLine)};
+                    ECSEngine::EntityID id;
+                    if (sprite == 'x') {
+                        id = engine.GetScene()->GetEntityManager().CreateEntity("Spike");
+                    } else if (sprite != 'T' && sprite != 'X' && sprite != '(' && sprite != ')') {
+                        id = engine.GetScene()->GetEntityManager().CreateEntity("Wall");
+                    } else {
+                        id = engine.GetScene()->GetEntityManager().CreateEntity("MapPart");
+                    }
+                    ECSEngine::Rect boundRect(ECSEngine::Point2D(std::stof(spriteDict[sprite][1]),
+                                                                 std::stof(spriteDict[sprite][2])),
+                                              std::stof(spriteDict[sprite][3]),
+                                              std::stof(spriteDict[sprite][4]));
+                    // std::cout << "Registered sprite texture.\n"
+                    //           << "path: " << gResourcePath + spriteDict[sprite][0] << "\n"
+                    //           << "tl: "
+                    //           << ECSEngine::Point2D(std::stof(spriteDict[sprite][1]),
+                    //                                 std::stof(spriteDict[sprite][2]))
+                    //           << "\n"
+                    //           << "width: " << std::stof(spriteDict[sprite][3]) << "\n"
+                    //           << "height: " << std::stof(spriteDict[sprite][4]) << "\n";
+
+                    ECSEngine::SpriteID spriteid =
+                        engine.GetScene()->GetSpriteManager().RegisterTexture(
+                        gResourcePath + spriteDict[sprite][0], boundRect);
+
+                    ECSEngine::SpriteComponent spriteComponent;
+                    spriteComponent.textureID = spriteid;
+                    spriteComponent.bounds =
+                        ECSEngine::Rect(ECSEngine::Point2D(0, 0), tileWidth, tileHeight);
+                    spriteComponent.worldSpace = true;
+
+                    engine.GetScene()->GetEntityManager().AddComponent<ECSEngine::SpriteComponent>(
+                        id, spriteComponent);
+
+                    // std::cout << "Location: " << location.loc.x << ", " << location.loc.y <<
+                    // "\n"; std::cout << "cur char: " << currentChar << ", " << currentLine <<
+                    // "\n";
+                    engine.GetScene()
+                        ->GetEntityManager()
+                        .AddComponent<ECSEngine::LocationComponent>(id,
+                                                                                         location);
+                    if (dictionaryType == 2 && sprite != 'S') {
+                        ECSEngine::CollisionComponent collision;
+                        collision.collisionBox = {
+                            ECSEngine::Point2D(std::stof(spriteDict[sprite][5]),
+                                               std::stof(spriteDict[sprite][6])),
+                            std::stof(spriteDict[sprite][7]), std::stof(spriteDict[sprite][8])};
+                        collision.staticEntity = 1;
+                        engine.GetScene()
+                            ->GetEntityManager()
+                            .AddComponent<ECSEngine::CollisionComponent>(
+                            id, collision);
+                    }
+
+                    if (sprite == 'S') {
+                        ECSEngine::SpawnComponent spawn;
+                        spawn.entityID = id;
+                        spawn.spawnType = "Star";
+                        spawn.timeBetweenSpawns = 60;
+                        spawn.timeToNextSpawn = 0;
+                        spawn.totalSpawns = 5;
+                        engine.GetScene()
+                            ->GetEntityManager()
+                            .AddComponent<ECSEngine::SpawnComponent>(id,
+                                                                                          spawn);
+                    }
+                }
+                currentChar++;
+            }
+            currentLine++;
+        }
+    }
+    mapFile.close();
+}
 
 int main(int argc, char* argv[]) {
     if (argc >= 3 && argv[1] == std::string("-path")) {
@@ -48,19 +205,163 @@ int main(int argc, char* argv[]) {
 
     // Engine test code
     Engine engine(1024, 768, "Test Engine");
+    engine.AddScene(engine.MakeScene());
 
     // Load sounds
+    engine.GetScene()->GetSoundManager().RegisterSound(gResourcePath + "error_008.ogg", "error");
+    engine.GetScene()->GetSoundManager().RegisterSound(gResourcePath + "footstep_grass_003.ogg",
+                                           "grass_footstep");
+    engine.GetScene()->GetSoundManager().RegisterSound(gResourcePath + "footstep_snow_001.ogg",
+                                           "snow_footstep");
+    engine.GetScene()->GetSoundManager().RegisterSound(gResourcePath + "laserLarge_000.ogg",
+                                                       "laser");
+    engine.GetScene()->GetSoundManager().RegisterSound(gResourcePath + "sfx_gem.ogg", "sfx_gem");
+    engine.GetScene()->GetSoundManager().RegisterSound(gResourcePath + "sfx_jump-high.ogg",
+                                                       "high_jump");
+    engine.GetScene()->GetSoundManager().RegisterSound(gResourcePath + "sfx_jump.ogg", "jump");
 
     // Load maps
+    LoadMap(engine, gResourcePath, "sky.map");
+    LoadMap(engine, gResourcePath, "world.map");
 
     // Place player
+    ECSEngine::EntityID player = engine.GetScene()->GetEntityManager().CreateEntity("player");
+
+    ECSEngine::SpriteComponent pSpriteComp;
+    pSpriteComp.textureID = engine.GetScene()->GetSpriteManager().RegisterTexture(
+        gResourcePath + "spritesheet-characters-default.png",
+        ECSEngine::Rect(ECSEngine::Point2D(25, 670), 78, 98));
+    pSpriteComp.bounds = ECSEngine::Rect(ECSEngine::Point2D(0, 0), 78, 98);
+    pSpriteComp.worldSpace = true;
+
+    ECSEngine::CollisionComponent pCollisionComp;
+    pCollisionComp.collisionBox = ECSEngine::Rect(ECSEngine::Point2D(0, 0), 78, 98);
+    pCollisionComp.onCeiling = 0;
+    pCollisionComp.onGround = 0;
+    pCollisionComp.onLeftWall = 0;
+    pCollisionComp.onRightWall = 0;
+
+    ECSEngine::CameraComponent pCameraComp;
+    sf::Vector2u windowSize = engine.GetScene()->GetWindowManager().GetWindow()->getSize();
+    float softExc = 0.3f;
+    float hardExc = 0.1f;
+    pCameraComp.position = ECSEngine::Point2D(800, 0);
+    pCameraComp.softExclusion = ECSEngine::Rect(ECSEngine::Point2D(windowSize.x * softExc, 0.f),
+                                                windowSize.x * (1 - softExc * 2), windowSize.y);
+    pCameraComp.hardExclusion = ECSEngine::Rect(ECSEngine::Point2D(windowSize.x * hardExc, 0.f),
+                                                windowSize.x * (1 - hardExc * 2), windowSize.y);
+    pCameraComp.worldUnitsPerPixel = 1;
+    pCameraComp.speed = 1;
+
+    ECSEngine::CameraFollower pCameraFollower;
+    pCameraFollower.entityID = player;
+
+    ECSEngine::InputComponent pInputComp(player);
+    ECSEngine::LocationComponent pLocationComp;
+    pLocationComp.loc = ECSEngine::Point2D(1024 * 0.7f, 768 * 0.5f);
+
+    ECSEngine::MovementComponent pMovementComp;
+    pMovementComp.velocity = ECSEngine::Point2D(0, 0);
+    ECSEngine::GravityComponent pGravityComp(ECSEngine::Point2D(0.0f, 0.0f));
+
+    ECSEngine::RespawnComponent pRespawnComp;
+    pRespawnComp.loc = pLocationComp.loc;
+
+    engine.GetScene()->GetEntityManager().AddComponent(player, pLocationComp);
+    engine.GetScene()->GetEntityManager().AddComponent(player, pSpriteComp);
+    engine.GetScene()->GetEntityManager().AddComponent(player, pCollisionComp);
+    engine.GetScene()->GetEntityManager().AddComponent(player, pCameraFollower);
+    engine.GetScene()->GetEntityManager().AddComponent(player, pGravityComp);
+    engine.GetScene()->GetEntityManager().AddComponent(player, pMovementComp);
+    engine.GetScene()->GetEntityManager().AddComponent(player, pInputComp);
+    engine.GetScene()->GetEntityManager().AddComponent(player, pRespawnComp);
 
     // Setup score component
 
+    ECSEngine::EntityID score1 = engine.GetScene()->GetEntityManager().CreateEntity("score_1");
+    ECSEngine::EntityID score2 = engine.GetScene()->GetEntityManager().CreateEntity("score_2");
+    ECSEngine::EntityID score3 = engine.GetScene()->GetEntityManager().CreateEntity("score_3");
+    ECSEngine::ScoreComponent scoreComp;
+    std::cout << "setting digitID" << "\n";
+    scoreComp.digitID[0] = score1;
+    scoreComp.digitID[1] = score2;
+    scoreComp.digitID[2] = score3;
+    std::cout << "registering texture" << "\n";
+    scoreComp.digitTextureID[9] = engine.GetScene()->GetSpriteManager().RegisterTexture(
+        gResourcePath + "spritesheet-tiles-default.png",
+        ECSEngine::Rect(ECSEngine::Point2D(832, 64 * 4), 64, 64));
+    scoreComp.digitTextureID[8] = engine.GetScene()->GetSpriteManager().RegisterTexture(
+        gResourcePath + "spritesheet-tiles-default.png",
+        ECSEngine::Rect(ECSEngine::Point2D(832, 64 * 5), 64, 64));
+    scoreComp.digitTextureID[7] = engine.GetScene()->GetSpriteManager().RegisterTexture(
+        gResourcePath + "spritesheet-tiles-default.png",
+        ECSEngine::Rect(ECSEngine::Point2D(832, 64 * 6), 64, 64));
+    scoreComp.digitTextureID[6] = engine.GetScene()->GetSpriteManager().RegisterTexture(
+        gResourcePath + "spritesheet-tiles-default.png",
+        ECSEngine::Rect(ECSEngine::Point2D(832, 64 * 7), 64, 64));
+    scoreComp.digitTextureID[5] = engine.GetScene()->GetSpriteManager().RegisterTexture(
+        gResourcePath + "spritesheet-tiles-default.png",
+        ECSEngine::Rect(ECSEngine::Point2D(832, 64 * 8), 64, 64));
+    scoreComp.digitTextureID[4] = engine.GetScene()->GetSpriteManager().RegisterTexture(
+        gResourcePath + "spritesheet-tiles-default.png",
+        ECSEngine::Rect(ECSEngine::Point2D(832, 64 * 9), 64, 64));
+    scoreComp.digitTextureID[3] = engine.GetScene()->GetSpriteManager().RegisterTexture(
+        gResourcePath + "spritesheet-tiles-default.png",
+        ECSEngine::Rect(ECSEngine::Point2D(832, 64 * 10), 64, 64));
+    scoreComp.digitTextureID[2] = engine.GetScene()->GetSpriteManager().RegisterTexture(
+        gResourcePath + "spritesheet-tiles-default.png",
+        ECSEngine::Rect(ECSEngine::Point2D(832, 64 * 11), 64, 64));
+    scoreComp.digitTextureID[1] = engine.GetScene()->GetSpriteManager().RegisterTexture(
+        gResourcePath + "spritesheet-tiles-default.png",
+        ECSEngine::Rect(ECSEngine::Point2D(832, 64 * 12), 64, 64));
+    scoreComp.digitTextureID[0] = engine.GetScene()->GetSpriteManager().RegisterTexture(
+        gResourcePath + "spritesheet-tiles-default.png",
+        ECSEngine::Rect(ECSEngine::Point2D(832, 64 * 13), 64, 64));
+
+    ECSEngine::SpriteComponent scoreSpriteComp1;
+    scoreSpriteComp1.textureID = scoreComp.digitTextureID[0];
+    scoreSpriteComp1.bounds = ECSEngine::Rect(ECSEngine::Point2D(0, 0), 64, 64);
+    scoreSpriteComp1.worldSpace = false;
+    engine.GetScene()->GetEntityManager().AddComponent(score1, scoreSpriteComp1);
+
+    ECSEngine::SpriteComponent scoreSpriteComp2;
+    scoreSpriteComp2.textureID = scoreComp.digitTextureID[0];
+    scoreSpriteComp2.bounds = ECSEngine::Rect(ECSEngine::Point2D(0, 0), 64, 64);
+    scoreSpriteComp2.worldSpace = false;
+    engine.GetScene()->GetEntityManager().AddComponent(score2, scoreSpriteComp2);
+
+    ECSEngine::SpriteComponent scoreSpriteComp3;
+    scoreSpriteComp3.textureID = scoreComp.digitTextureID[0];
+    scoreSpriteComp3.bounds = ECSEngine::Rect(ECSEngine::Point2D(0, 0), 64, 64);
+    scoreSpriteComp3.worldSpace = false;
+    engine.GetScene()->GetEntityManager().AddComponent(score3, scoreSpriteComp3);
+
+    std::cout << "setting locations" << "\n";
+    scoreComp.score = 0;
+    ECSEngine::LocationComponent score1Loc;
+    score1Loc.loc = ECSEngine::Point2D(0, 0);
+    ECSEngine::LocationComponent score2Loc;
+    score2Loc.loc = ECSEngine::Point2D(50, 0);
+    ECSEngine::LocationComponent score3Loc;
+    score3Loc.loc = ECSEngine::Point2D(100, 0);
+    std::cout << "adding components" << "\n";
+
+    engine.GetScene()->GetEntityManager().AddComponent(score1, score1Loc);
+    engine.GetScene()->GetEntityManager().AddComponent(score2, score2Loc);
+    engine.GetScene()->GetEntityManager().AddComponent(score3, score3Loc);
+
+    engine.GetScene()->GetEntityManager().AddComponent(player, scoreComp);
+
     // Setup Camera
+    ECSEngine::CameraShake camShakeComp;
+    camShakeComp.frameLimit = 0;
+    camShakeComp.offset = {0.0f, 0.0f};
+
+    ECSEngine::EntityID camera = engine.GetScene()->GetEntityManager().CreateEntity("Camera");
+    engine.GetScene()->GetEntityManager().AddComponent(camera, pCameraComp);
+    engine.GetScene()->GetEntityManager().AddComponent(player, camShakeComp);
 
     // Add all systems
-    engine.AddScene(engine.MakeScene());
     auto& sm = engine.GetScene()->GetSystemManager(); 
     sm.AddSystem(std::make_unique<ECSEngine::CollisionLateSystem<COMPONENTS>>());
     sm.AddSystem(std::make_unique<ECSEngine::InputSystem<COMPONENTS>>());
