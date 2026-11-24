@@ -4,7 +4,9 @@
 namespace ECSEngine {
 
 SpriteID SpriteManager::RegisterTexture(const std::string& texturePath, const Rect& sourceRect) {
-    //TODO: load and copy the sprite into a single internal sprite sheet / texture
+    // load and copy the sprite into a single internal sprite sheet / texture
+    unsigned int max = mTexture.getMaximumSize(); // use maximum size gpu can handle?
+
     int x = static_cast<int>(sourceRect.topLeft.x);
     int y = static_cast<int>(sourceRect.topLeft.y);
     int width = static_cast<int>(sourceRect.width);
@@ -15,21 +17,40 @@ SpriteID SpriteManager::RegisterTexture(const std::string& texturePath, const Re
     if (it != mSpriteMap.end()) {
         return it->second;
     }
-    if (mTexture.getSize().x == 0) {
+    if (mTexture.getSize().x == 0) { // if texture doesn't have anything
         mRowMinY = 0;
         mRowMaxY = 0;
         mColMinX = 0;
+        mTexture.resize(sf::Vector2u(max, max));
+    }
+    if (mColMinX + width > max) { // if x would exceed texture bound, go to next "line"
+        mColMinX = 0;
+        mRowMinY = mRowMaxY;
+    }
+    if (mRowMinY + height > max) {
+        std::exception("Sprite sheet maximum Y reached!");
     }
 
-    
+    // copies target area into image, then updates texture with image
+    sf::Image initialImage;
+    initialImage.loadFromFile(texturePath);
+    sf::IntRect area({x, y}, {width, height});
+    sf::Image resultImage(sf::Vector2u(width, height), sf::Color::White);
+    resultImage.copy(initialImage, {0, 0}, area);
 
-    return 0;
+    mTexture.update(resultImage, sf::Vector2u(mColMinX, mRowMinY));
+    sf::Sprite sprite(mTexture);
+    sprite.setTextureRect({{mColMinX, mRowMinY}, {width, height}});
+
+    mColMinX = mColMinX + width;
+    mRowMaxY = std::max(mRowMaxY, mRowMaxY + height);
+
+    SpriteID id = mSprites.size();
+    mSpriteMap.insert(std::pair<std::string, SpriteID>(key, id));
+
+    return id;
 }
 
-sf::Sprite& SpriteManager::GetSprite(SpriteID id) {
-    static sf::Texture dummyTexture;
-    static sf::Sprite dummy(dummyTexture);
-    return dummy;
-}
+sf::Sprite& SpriteManager::GetSprite(SpriteID id) { return mSprites[id]; }
 
 }  // namespace ECSEngine
