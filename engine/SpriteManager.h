@@ -12,7 +12,7 @@ using SpriteID = size_t;
 
 class SpriteManager {
 public:
-    SpriteManager();
+    SpriteManager() = default;
     ~SpriteManager() = default;
     [[nodiscard]] SpriteID RegisterTexture(const std::string& texturePath, const Rect& sourceRect);
     sf::Sprite& GetSprite(SpriteID id);

@@ -7,7 +7,7 @@
 #include "EntityManager.h"
 #include "MathUtil.h"
 #include "SpriteManager.h"
-#include "SystemManager.h"
+//#include "SystemManager.h"
 #include <SFML/Graphics/Sprite.hpp>
 #include <SFML/Graphics/Texture.hpp>
 
@@ -21,7 +21,7 @@ public:
         return name;
     }
 
-    tSystemReturn Run(EngineView<Components...>* engine) override { return kContinue; }
+    tSystemReturn Run(SceneView<Components...>* engine) override { return kContinue; }
 };
 
 }  // namespace ECSEngine

@@ -4,6 +4,7 @@
 
 #include "EntityManager.h"
 #include "ScoreComponent.h"
+//#include "Scene.h"
 
 namespace ECSEngine {
 
@@ -15,7 +16,7 @@ public:
         return name;
     }
 
-    tSystemReturn Run(EngineView<Components...>* engine) override {
+    tSystemReturn Run(SceneView<Components...>* engine) override {
         EntityManager<Components...>& entityManager = engine->GetEntityManager();
         WindowManager& windowManager = engine->GetWindowManager();
 

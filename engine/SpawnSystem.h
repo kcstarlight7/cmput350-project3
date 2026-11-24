@@ -12,7 +12,7 @@ public:
         return name;
     }
 
-    tSystemReturn Run(EngineView<Components...>* engine) override {
+    tSystemReturn Run(SceneView<Components...>* engine) override {
         auto& entityManager = engine->GetEntityManager();
         std::vector<std::string> spawns;
         Point2D spawnerLoc;

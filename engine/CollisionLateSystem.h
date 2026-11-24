@@ -1,5 +1,7 @@
 #pragma once
 
+//#include "Scene.h"
+
 namespace ECSEngine {
 
 template <typename... Components>
@@ -10,7 +12,7 @@ public:
         return name;
     }
 
-    tSystemReturn Run(EngineView<Components...>* engine) override {
+    tSystemReturn Run(SceneView<Components...>* engine) override {
         auto& entityManager = engine->GetEntityManager();
         for (auto iterator = entityManager.cbegin(); iterator != entityManager.cend(); ++iterator) {
             // loops through all entities

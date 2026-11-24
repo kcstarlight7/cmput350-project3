@@ -6,7 +6,7 @@
 #include "LocationComponent.h"
 #include "MathUtil.h"
 #include "SpriteComponent.h"
-#include "SystemManager.h"
+//#include "SystemManager.h"
 #include <SFML/Graphics/Sprite.hpp>
 #include <SFML/Graphics/Texture.hpp>
 

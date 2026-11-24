@@ -1,11 +1,18 @@
 #include <fstream>
 
+#include "WindowManager.h"
+#include "SystemManager.h" 
+#include "EntityManager.h"
+#include "SpriteManager.h"
+#include "SoundManager.h"
+#include "Scene.h"
+#include "ECSEngine.h"
+
 #include "CameraSystem.h"
 #include "CollisionComponent.h"
 #include "CollisionLateSystem.h"
 #include "CollisionSystem.h"
-#include "ECSEngine.h"
-#include "EntityManager.h"
+
 #include "GravitySystem.h"
 #include "InputComponent.h"
 #include "InputSystem.h"
@@ -17,8 +24,10 @@
 #include "SpawnComponent.h"
 #include "SpawnSystem.h"
 #include "SpriteComponent.h"
-#include "SpriteManager.h"
 #include "SpriteSystem.h"
+
+
+
 
 std::string gResourcePath = "../assets/";
 #define COMPONENTS                                                                             \
@@ -51,7 +60,8 @@ int main(int argc, char* argv[]) {
     // Setup Camera
 
     // Add all systems
-    auto& sm = engine.GetSystemManager();
+    engine.AddScene(engine.MakeScene());
+    auto& sm = engine.GetScene()->GetSystemManager(); 
     sm.AddSystem(std::make_unique<ECSEngine::CollisionLateSystem<COMPONENTS>>());
     sm.AddSystem(std::make_unique<ECSEngine::InputSystem<COMPONENTS>>());
     sm.AddSystem(std::make_unique<ECSEngine::GravitySystem<COMPONENTS>>());
