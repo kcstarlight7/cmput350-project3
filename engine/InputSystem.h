@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Keyboard.h"
+#include "MenuComponent.h"
 
 namespace ECSEngine {
 
@@ -28,107 +29,40 @@ public:
             auto currentID = iterator->GetID();
             if (entityManager.template HasComponent<InputComponent>(currentID)) {
                 // if entity has input component
-                // std::cout << "has input" << "\n";
+                //std::cout << "has input" << "\n";
                 InputComponent& inputComp =
                     entityManager.template GetComponent<InputComponent>(currentID);
-                GravityComponent& gravComp =
-                    entityManager.template GetComponent<GravityComponent>(currentID);
-                Point2D currentVelocity =
-                    entityManager.template GetComponent<MovementComponent>(currentID).velocity;
-                if (inputComp.lastDash != 0 && inputComp.lastDash < 5) {
-                    inputComp.lastDash++;
-
-                    if (currentVelocity.x > 0) {
-                        gravComp.acceleration.x = 0.75;
-                    } else {
-                        gravComp.acceleration.x = -0.75;
-                    }
-                } else if (inputComp.lastDash >= 5) {
-                    inputComp.lastDash = 0;
-                }
+                
                 // std::cout << inputComp.keydown.any() << "\n";
-                if (inputComp.keydown[Key::Left]) {
+                if (inputComp.keydown[Key::Up]) {
                     // move left
-                    std::cout << "left" << "\n";
-                    if (entityManager.template HasComponent<MovementComponent>(currentID)) {
-                        Point2D currentVelocity =
-                            entityManager.template GetComponent<MovementComponent>(currentID)
-                                .velocity;
-                        entityManager.template GetComponent<MovementComponent>(currentID)
-                            .velocity.x =
-                            currentVelocity.x + 0.025 * ((-kMaxRunVelocity) - currentVelocity.x);
+                    std::cout << "up" << "\n";
+                    if (entityManager.template HasComponent<MenuComponent>(currentID)) {
+                        MenuComponent& menuComp = entityManager.template GetComponent<MenuComponent>(currentID);
+                        if (menuComp.selected[1]) {
+                            menuComp.selected[0] = 1;
+                            menuComp.selected[1] = 0;
+                        }
+
+                        if (!menuComp.selected[0] && !menuComp.selected[1]) {
+                            menuComp.selected[0] = 1;
+                            menuComp.selected[1] = 0;
+                        }
                     }
-                } else if (inputComp.keydown[Key::Right]) {
+                } else if (inputComp.keydown[Key::Down]) {
                     // move right
-                    std::cout << "right" << "\n";
-                    if (entityManager.template HasComponent<MovementComponent>(currentID)) {
-                        Point2D currentVelocity =
-                            entityManager.template GetComponent<MovementComponent>(currentID)
-                                .velocity;
-                        entityManager.template GetComponent<MovementComponent>(currentID)
-                            .velocity.x =
-                            currentVelocity.x + 0.025 * (kMaxRunVelocity - currentVelocity.x);
-                    }
-                } else {
-                    if (entityManager.template HasComponent<MovementComponent>(currentID)) {
-                        Point2D currentVelocity =
-                            entityManager.template GetComponent<MovementComponent>(currentID)
-                                .velocity;
-                        entityManager.template GetComponent<MovementComponent>(currentID)
-                            .velocity.x = 0;
-                    }
-                }
-
-                CollisionComponent& colliComp =
-                    entityManager.template GetComponent<CollisionComponent>(currentID);
-                if (inputComp.keydown[Key::Z] && inputComp.jumpDuration < 10) {
-                    // jump
-                    std::cout << "jump" << "\n";
-                    inputComp.jumpDuration++;
-
-                    std::cout << inputComp.jumpDuration << "\n";
-                    if (entityManager.template GetComponent<MovementComponent>(currentID)
-                            .jumpCount == 0) {
-                        entityManager.template GetComponent<MovementComponent>(currentID)
-                            .jumpCount++;
-                        entityManager.template GetComponent<CollisionComponent>(currentID)
-                            .onGround = 0;
-                        entityManager.template GetComponent<GravityComponent>(currentID)
-                            .acceleration.y = -(kJumpVelocity / inputComp.jumpDuration);
-                        if (entityManager.template GetComponent<LocationComponent>(currentID)
-                                .loc.y >= engine->GetWindowManager().GetWindowBounds().height) {
-                            entityManager.template GetComponent<GravityComponent>(currentID)
-                                .acceleration.y = 0;
+                    std::cout << "down" << "\n";
+                    if (entityManager.template HasComponent<MenuComponent>(currentID)) {
+                        MenuComponent& menuComp = entityManager.template GetComponent<MenuComponent>(currentID);
+                        if (menuComp.selected[0]) {
+                            menuComp.selected[0] = 0;
+                            menuComp.selected[1] = 1;
                         }
-                    }
 
-                } else {
-                    if (inputComp.lastKeydown[Key::Z] &&
-                        entityManager.template GetComponent<MovementComponent>(currentID)
-                                .jumpCount == 1) {
-                        entityManager.template GetComponent<GravityComponent>(currentID)
-                            .acceleration.y = 0;
-                        if (inputComp.jumpDuration >= 5) {
-                            engine->GetSoundManager().GetSound("high_jump").play();
-                        } else {
-                            engine->GetSoundManager().GetSound("jump").play();
+                        if (!menuComp.selected[0] && !menuComp.selected[1]) {
+                            menuComp.selected[0] = 0;
+                            menuComp.selected[1] = 1;
                         }
-                        entityManager.template GetComponent<MovementComponent>(currentID)
-                            .jumpCount++;
-                    }
-                    inputComp.jumpDuration = 0;
-                }
-                if (inputComp.keydown[Key::C]) {
-                    // dash
-                    // default dash forward?
-                    if (inputComp.lastDash == 0 &&
-                        entityManager.template HasComponent<MovementComponent>(currentID)) {
-                        std::cout << "dash" << "\n";
-                        entityManager.template GetComponent<CollisionComponent>(currentID)
-                            .onGround = 0;
-                        gravComp.acceleration.x *= 1.25;
-                        inputComp.lastDash++;
-                        // return kContinue;
                     }
                 }
             }

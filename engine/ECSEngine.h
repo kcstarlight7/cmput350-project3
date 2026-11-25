@@ -1,6 +1,7 @@
 #pragma once
 
 //#include "Scene.h"
+#include "InputComponent.h"
 
 namespace ECSEngine {
 
@@ -37,6 +38,7 @@ public:
     
 
 private: 
+    bool ProcessEvents(SceneView<Components...>& scene);
     std::vector<std::shared_ptr<SceneView<Components...>>> mScenes;
     WindowManager mWindowManager;
 };
@@ -57,7 +59,9 @@ void ECSEngine<Components...>::Run() {
         if (!scene) {
             return;
         }
-
+        if (!ProcessEvents(*scene)) {
+            return;
+        }
         tSceneReturn status = scene->DoOneFrame(this);
         mWindowManager.GetWindow()->display();
         if (status == kSceneContinue) {
@@ -68,6 +72,49 @@ void ECSEngine<Components...>::Run() {
         }
     }
     
+}
+
+template <typename... Components>
+bool ECSEngine<Components...>::ProcessEvents(SceneView<Components...>& scene) {
+    // process events from sfml and updating input component
+
+    std::bitset<sf::Keyboard::ScancodeCount> keydowns{};
+    std::bitset<sf::Keyboard::ScancodeCount> keyups{};
+
+    while (const std::optional event = mWindowManager.GetWindow()->pollEvent()) {
+        if (event->is<sf::Event::Closed>()) {
+            return false;
+            mWindowManager.GetWindow()->close();
+        }
+
+        if (const auto* keyPressed = event->getIf<sf::Event::KeyPressed>()) {
+            keydowns.set((int)keyPressed->scancode);
+        }
+
+        if (const auto* keyReleased = event->getIf<sf::Event::KeyReleased>()) {
+            keyups.set((int)keyReleased->scancode);
+        }
+    }
+
+    auto& entityManager = scene.GetEntityManager();
+    for (auto iterator = entityManager.cbegin(); iterator != entityManager.cend(); ++iterator) {
+        // loops through all entities
+        auto currentID = iterator->GetID();
+        if (entityManager.template HasComponent<InputComponent>(currentID)) {
+            InputComponent& inpComp =
+                entityManager.template GetComponent<InputComponent>(currentID);
+
+            inpComp.lastKeydown = inpComp.keydown;
+            inpComp.keydown |= keydowns;
+            for (unsigned int i = 0; i < sf::Keyboard::ScancodeCount; i++) {
+                if (inpComp.keydown.test(i) == keyups.test(i)) {
+                    inpComp.keydown.reset(i);
+                }
+            }
+        }
+    }
+
+    return true;
 }
 
 }  // namespace ECSEngine

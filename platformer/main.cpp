@@ -25,6 +25,8 @@
 #include "SpawnSystem.h"
 #include "SpriteComponent.h"
 #include "SpriteSystem.h"
+#include "MenuComponent.h"
+#include "MenuSystem.h"
 
 #include "menu.cpp"
 
@@ -36,7 +38,7 @@ std::string gResourcePath = "../../assets/";
     ECSEngine::LocationComponent, ECSEngine::MovementComponent, ECSEngine::CollisionComponent, \
         ECSEngine::SpriteComponent, ECSEngine::SpawnComponent, ECSEngine::CameraComponent,     \
         ECSEngine::CameraFollower, ECSEngine::InputComponent, ECSEngine::GravityComponent,     \
-        ECSEngine::CameraShake, ECSEngine::ScoreComponent, ECSEngine::RespawnComponent
+        ECSEngine::CameraShake, ECSEngine::ScoreComponent, ECSEngine::RespawnComponent, ECSEngine::MenuComponent
 using Engine = ECSEngine::ECSEngine<COMPONENTS>;
 
 static void LoadMap(Engine& engine, const std::string& path, const std::string& file) {
@@ -207,7 +209,7 @@ int main(int argc, char* argv[]) {
 
     // Engine test code
     //Engine engine(1024, 768, "Test Engine");
-    std::shared_ptr<Engine> engine = std::make_shared<Engine>(1024, 768, "Test Engine");
+    std::shared_ptr<Engine> engine = std::make_shared<Engine>(1024, 576, "Test Engine");
     startMenu(*engine, gResourcePath);
 
     engine->Run();

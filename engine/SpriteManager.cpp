@@ -40,7 +40,7 @@ SpriteID SpriteManager::RegisterTexture(const std::string& texturePath, const Re
     mTexture.update(resultImage, sf::Vector2u(mColMinX, mRowMinY));
     sf::Sprite sprite(mTexture);
     sprite.setTextureRect(sf::IntRect({mColMinX, mRowMinY}, {width, height}));
-    std::cout << sprite.getTextureRect().size.y << "\n";
+    //std::cout << sprite.getTextureRect().size.y << "\n";
     mSprites.push_back(sprite);
 
     mColMinX = mColMinX + width;
