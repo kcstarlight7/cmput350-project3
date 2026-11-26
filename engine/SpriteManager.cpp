@@ -90,7 +90,7 @@ SpriteID SpriteManager::RegisterSolidColorTexture(sf::Color color) {
     return id;
 }
 
-sf::Sprite& SpriteManager::GetColorSprite(SpriteID id, Point2D size) { 
+sf::Sprite& SpriteManager::ResizeAndGetColorSprite(SpriteID id, Point2D size) { 
     sf::Sprite& sprite = mSprites[id]; 
     sprite.setScale({size.x, size.y});
 

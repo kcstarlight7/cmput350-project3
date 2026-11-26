@@ -18,7 +18,7 @@ public:
     sf::Sprite& GetSprite(SpriteID id);
     sf::Texture& GetTexture() { return mTexture; };
     SpriteID RegisterSolidColorTexture(sf::Color color);
-    sf::Sprite& GetColorSprite(SpriteID id, Point2D size);
+    sf::Sprite& ResizeAndGetColorSprite(SpriteID id, Point2D size);
 
 private:
     int mRowMinY, mRowMaxY, mColMinX;
