@@ -32,9 +32,24 @@ public:
                 //std::cout << "has input" << "\n";
                 InputComponent& inputComp =
                     entityManager.template GetComponent<InputComponent>(currentID);
+                if (inputComp.sleepFrame > 0) {
+                    inputComp.sleepFrame--;
+                    return kContinue;
+                }
+                
+                if (!inputComp.keydown.none()) {
+                    inputComp.sleepFrame = inputComp.delay;
+                }
                 
                 // std::cout << inputComp.keydown.any() << "\n";
                 if (inputComp.keydown[Key::Up]) {
+                    //inputComp.sleepFrame = inputComp.delay;
+
+                    /*
+                    if ((inputComp.delay != -1) && (inputComp.sleepFrame < inputComp.delay)) {
+                        inputComp.sleepFrame++;
+                        continue;
+                    }*/
                     //std::cout << "up" << "\n";
                     if (entityManager.template HasComponent<MenuComponent>(currentID)) {
                         MenuComponent& menuComp = entityManager.template GetComponent<MenuComponent>(currentID);
@@ -46,9 +61,17 @@ public:
                             menuComp.lastSelected -= 1;
                         }
                     }
+                    
                 } 
                 
                 if (inputComp.keydown[Key::Down]) {
+                    //inputComp.sleepFrame = inputComp.delay;
+
+                    /*
+                    if ((inputComp.delay != -1) && (inputComp.sleepFrame < inputComp.delay)) {
+                        inputComp.sleepFrame++;
+                        continue;
+                    }*/
                     //std::cout << "down" << "\n";
                     if (entityManager.template HasComponent<MenuComponent>(currentID)) {
                         MenuComponent& menuComp = entityManager.template GetComponent<MenuComponent>(currentID);
@@ -61,7 +84,13 @@ public:
                             menuComp.lastSelected += 1;
                         }
                     }
+                    /*
+                    if (inputComp.delay != -1) {
+                        inputComp.sleepFrame = 0;
+                    }*/
                 }
+
+                
             }
         }
         return kContinue;
