@@ -54,6 +54,7 @@ ECSEngine<Components...>::~ECSEngine() {}
 template <typename... Components>
 void ECSEngine<Components...>::Run() {
     while (true) {
+        mWindowManager.GetWindow()->clear();
         // continually runs the top scene When all scenes are complete, it returns.
         std::shared_ptr<SceneView<Components...>> scene = GetScene();
         if (!scene) {
