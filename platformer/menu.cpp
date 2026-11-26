@@ -108,14 +108,18 @@ void startMenu(Engine& engine, std::string resourcePath) {
                                                                          locCompText2);
 
     ECSEngine::MenuComponent menuComp;
-    menuComp.buttonEntities[0] = topButtonEntityid;
-    menuComp.buttonEntities[1] = bottomButtonEntityid;
-    menuComp.textEntities[0] = topTextEntityid;
-    menuComp.textEntities[1] = bottomTextEntityid;
-    menuComp.text[0] = topText;
-    menuComp.text[1] = bottomText;
+    menuComp.key = "StartMenu";
+    menuComp.menuLength = 2;
+    menuComp.buttonEntities.push_back(topButtonEntityid);
+    menuComp.buttonEntities.push_back(bottomButtonEntityid);
+    menuComp.textEntities.push_back(topTextEntityid);
+    menuComp.textEntities.push_back(bottomButtonEntityid);
+    menuComp.text.push_back(topText);
+    menuComp.text.push_back(bottomText);
     menuComp.buttons[0] = unselectedButtonid;
     menuComp.buttons[1] = selectedButtonid;
+    menuComp.startTopLeft = {776, 477};
+    menuComp.spacingPx = 288;
 
     ECSEngine::InputComponent inputComp(bgEntityid);
 
