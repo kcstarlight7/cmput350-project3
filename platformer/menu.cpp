@@ -1,12 +1,3 @@
-
-
-#define COMPONENTS                                                                             \
-    ECSEngine::LocationComponent, ECSEngine::MovementComponent, ECSEngine::CollisionComponent, \
-        ECSEngine::SpriteComponent, ECSEngine::SpawnComponent, ECSEngine::CameraComponent,     \
-        ECSEngine::CameraFollower, ECSEngine::InputComponent, ECSEngine::GravityComponent,     \
-        ECSEngine::CameraShake, ECSEngine::ScoreComponent, ECSEngine::RespawnComponent, ECSEngine::MenuComponent
-using Engine = ECSEngine::ECSEngine<COMPONENTS>;
-
 void startMenu(Engine& engine, std::string resourcePath) { 
     std::shared_ptr<ECSEngine::SceneView<COMPONENTS>> scene = engine.MakeScene();
     sf::Vector2f windowSize(scene->GetWindowManager().GetWindowBounds().width,
