@@ -64,14 +64,14 @@ add_library(ECS STATIC
     ${ECS_COMPONENT_FILES}
     ${ECS_SYSTEM_FILES}
     ${ECS_MANAGER_FILES}
-)
+ "ChartSystem.h" "ChartComponent.h")
 
 source_group("Engine" FILES ${ECS_ENGINE_FILES})
 source_group("Components" FILES ${ECS_COMPONENT_FILES})
 source_group("Systems" FILES ${ECS_SYSTEM_FILES})
 source_group("Managers" FILES ${ECS_MANAGER_FILES})
 
-add_executable(ECSTest EngineTest.cpp)
+add_executable(ECSTest EngineTest.cpp "ChartSystem.h" "ChartComponent.h")
 
 target_include_directories(ECS INTERFACE ${CMAKE_CURRENT_SOURCE_DIR})
 target_compile_features(ECS PRIVATE cxx_std_20)
