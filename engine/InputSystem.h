@@ -35,33 +35,30 @@ public:
                 
                 // std::cout << inputComp.keydown.any() << "\n";
                 if (inputComp.keydown[Key::Up]) {
-                    // move left
-                    std::cout << "up" << "\n";
+                    //std::cout << "up" << "\n";
                     if (entityManager.template HasComponent<MenuComponent>(currentID)) {
                         MenuComponent& menuComp = entityManager.template GetComponent<MenuComponent>(currentID);
-                        if (menuComp.selected[1]) {
-                            menuComp.selected[0] = 1;
-                            menuComp.selected[1] = 0;
+                        //std::cout << +menuComp.lastSelected << std::endl;
+                        if (menuComp.lastSelected == 0) {
+                            menuComp.lastSelected = 1;
                         }
-
-                        if (!menuComp.selected[0] && !menuComp.selected[1]) {
-                            menuComp.selected[0] = 1;
-                            menuComp.selected[1] = 0;
+                        if (menuComp.lastSelected != 1) {
+                            menuComp.lastSelected -= 1;
                         }
                     }
-                } else if (inputComp.keydown[Key::Down]) {
-                    // move right
-                    std::cout << "down" << "\n";
+                } 
+                
+                if (inputComp.keydown[Key::Down]) {
+                    //std::cout << "down" << "\n";
                     if (entityManager.template HasComponent<MenuComponent>(currentID)) {
                         MenuComponent& menuComp = entityManager.template GetComponent<MenuComponent>(currentID);
-                        if (menuComp.selected[0]) {
-                            menuComp.selected[0] = 0;
-                            menuComp.selected[1] = 1;
-                        }
+                        //std::cout << +menuComp.lastSelected << std::endl;
 
-                        if (!menuComp.selected[0] && !menuComp.selected[1]) {
-                            menuComp.selected[0] = 0;
-                            menuComp.selected[1] = 1;
+                        if (menuComp.lastSelected == 0) {
+                            menuComp.lastSelected = menuComp.menuLength;
+                        }
+                        if (menuComp.lastSelected != menuComp.menuLength) {
+                            menuComp.lastSelected += 1;
                         }
                     }
                 }
