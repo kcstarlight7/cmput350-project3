@@ -16,7 +16,9 @@ public:
     ~SpriteManager() = default;
     [[nodiscard]] SpriteID RegisterTexture(const std::string& texturePath, const Rect& sourceRect);
     sf::Sprite& GetSprite(SpriteID id);
-    sf::Texture& GetTexture() { return mTexture; }
+    sf::Texture& GetTexture() { return mTexture; };
+    SpriteID RegisterSolidColorTexture(sf::Color color);
+    sf::Sprite& GetColorSprite(SpriteID id, Point2D size);
 
 private:
     int mRowMinY, mRowMaxY, mColMinX;

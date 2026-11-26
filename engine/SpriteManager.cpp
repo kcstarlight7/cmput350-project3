@@ -28,7 +28,7 @@ SpriteID SpriteManager::RegisterTexture(const std::string& texturePath, const Re
         mRowMinY = mRowMaxY;
     }
     if (mRowMinY + height > max) {
-        std::exception("Sprite sheet maximum Y reached!");
+        throw std::exception("Sprite sheet maximum Y reached!");
     }
 
     // copies target area into image, then updates texture with image
@@ -53,5 +53,48 @@ SpriteID SpriteManager::RegisterTexture(const std::string& texturePath, const Re
 }
 
 sf::Sprite& SpriteManager::GetSprite(SpriteID id) { return mSprites[id]; }
+
+SpriteID SpriteManager::RegisterSolidColorTexture(sf::Color color) {
+    unsigned int max = mTexture.getMaximumSize();
+    std::string key = "r" + std::to_string(color.r) + "_" + "g" + std::to_string(color.g) + "_" +
+                      "b" + std::to_string(color.b) + "_" + "a" + std::to_string(color.a);
+    auto it = mSpriteMap.find(key);
+    if (it != mSpriteMap.end()) {
+        return it->second;
+    }
+    if (mTexture.getSize().x == 0) {
+        mRowMinY = 0;
+        mRowMaxY = 0;
+        mColMinX = 0;
+        mTexture.resize(sf::Vector2u(max, max));
+    }
+    if (mColMinX + 1 > max) {
+        mColMinX = 0;
+        mRowMinY = mRowMaxY;
+    }
+    if (mRowMinY + 1 > max) {
+        throw std::exception("Sprite sheet maximum Y reached!");
+    }
+    sf::Image image({1, 1}, color);
+    mTexture.update(image, sf::Vector2u(mColMinX, mRowMinY));
+    sf::Sprite sprite(mTexture);
+    sprite.setTextureRect(sf::IntRect({mColMinX, mRowMinY}, {1, 1}));
+    mSprites.push_back(sprite);
+
+    mColMinX += 1;
+    mRowMaxY = std::max(mRowMaxY, mRowMaxY + 1);
+
+    SpriteID id = mSprites.size() - 1;
+    mSpriteMap.insert(std::pair<std::string, SpriteID>(key, id));
+
+    return id;
+}
+
+sf::Sprite& SpriteManager::GetColorSprite(SpriteID id, Point2D size) { 
+    sf::Sprite& sprite = mSprites[id]; 
+    sprite.setScale({size.x, size.y});
+
+    return sprite;
+}
 
 }  // namespace ECSEngine
