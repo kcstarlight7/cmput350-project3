@@ -159,6 +159,8 @@ void pauseScreen(Engine& engine, std::string resourcePath) {
     // COMPLETE ADDING BUTTONS
     
     ECSEngine::InputComponent inputComp(pauseBgEntity);
+    inputComp.delay = 60;
+    inputComp.sleepFrame = 60;
     scene->GetEntityManager().AddComponent<ECSEngine::MenuComponent>(pauseBgEntity, menuComp);
     scene->GetEntityManager().AddComponent<ECSEngine::InputComponent>(pauseBgEntity, inputComp);
 

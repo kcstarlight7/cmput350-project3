@@ -122,6 +122,8 @@ void startMenu(Engine& engine, std::string resourcePath) {
     menuComp.spacingPx = 288;
 
     ECSEngine::InputComponent inputComp(bgEntityid);
+    inputComp.delay = 60;
+    inputComp.sleepFrame = 60;
 
     scene->GetEntityManager().AddComponent<ECSEngine::MenuComponent>(bgEntityid, menuComp);
     scene->GetEntityManager().AddComponent<ECSEngine::InputComponent>(bgEntityid, inputComp);
