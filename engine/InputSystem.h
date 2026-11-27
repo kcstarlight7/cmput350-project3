@@ -5,15 +5,6 @@
 
 namespace ECSEngine {
 
-const float kMaxRunVelocity = 15;
-const float kDashVelocity = 30;
-const float kJumpVelocity = 1.5;
-const float kGroundRunAcceleration = 5;
-const float kAirRunAcceleration = 4;
-const float kDashInterval = 25;
-// currently just setting disabled timer to frame rate to handle dash interval
-// pending movement system implementation to update?
-
 template <typename... Components>
 class InputSystem : public System<Components...> {
 public:
@@ -32,28 +23,23 @@ public:
                 //std::cout << "has input" << "\n";
                 InputComponent& inputComp =
                     entityManager.template GetComponent<InputComponent>(currentID);
-                if (inputComp.sleepFrame > 0) {
+                if (inputComp.sleepFrame > 0 && !inputComp.keydown.none()) {
+                    // progress sleep timer if key is still being held down
                     inputComp.sleepFrame--;
                     return kContinue;
+                } else if (inputComp.keydown.none()) {
+                    // reset sleep timer to 0 if key is no longer being held
+                    inputComp.sleepFrame = 0;
                 }
                 
-                if (!inputComp.keydown.none()) {
-                    inputComp.sleepFrame = inputComp.delay;
-                }
                 
                 // std::cout << inputComp.keydown.any() << "\n";
                 if (inputComp.keydown[Key::Up]) {
-                    //inputComp.sleepFrame = inputComp.delay;
-
-                    /*
-                    if ((inputComp.delay != -1) && (inputComp.sleepFrame < inputComp.delay)) {
-                        inputComp.sleepFrame++;
-                        continue;
-                    }*/
                     //std::cout << "up" << "\n";
                     if (entityManager.template HasComponent<MenuComponent>(currentID)) {
                         MenuComponent& menuComp = entityManager.template GetComponent<MenuComponent>(currentID);
                         //std::cout << +menuComp.lastSelected << std::endl;
+
                         if (menuComp.lastSelected == 0) {
                             menuComp.lastSelected = 1;
                         }
@@ -65,13 +51,6 @@ public:
                 } 
                 
                 if (inputComp.keydown[Key::Down]) {
-                    //inputComp.sleepFrame = inputComp.delay;
-
-                    /*
-                    if ((inputComp.delay != -1) && (inputComp.sleepFrame < inputComp.delay)) {
-                        inputComp.sleepFrame++;
-                        continue;
-                    }*/
                     //std::cout << "down" << "\n";
                     if (entityManager.template HasComponent<MenuComponent>(currentID)) {
                         MenuComponent& menuComp = entityManager.template GetComponent<MenuComponent>(currentID);
@@ -84,13 +63,11 @@ public:
                             menuComp.lastSelected += 1;
                         }
                     }
-                    /*
-                    if (inputComp.delay != -1) {
-                        inputComp.sleepFrame = 0;
-                    }*/
                 }
 
-                
+                if (!inputComp.keydown.none()) {
+                    inputComp.sleepFrame = inputComp.delay;
+                }
             }
         }
         return kContinue;
