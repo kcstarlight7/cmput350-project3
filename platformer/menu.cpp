@@ -17,6 +17,7 @@ void startMenu(Engine& engine, std::string resourcePath) {
     spriteComponent.bounds =
         ECSEngine::Rect(ECSEngine::Point2D(0, 0), 1920, 1080);
     spriteComponent.worldSpace = false;
+    spriteComponent.layer = 0;
     ECSEngine::LocationComponent locComp;
     locComp.loc = {0, 0};
     
@@ -35,6 +36,7 @@ void startMenu(Engine& engine, std::string resourcePath) {
     titleSpriteComponent.textureID = titleSpriteid;
     titleSpriteComponent.bounds = ECSEngine::Rect(ECSEngine::Point2D(0, 0), 598, 174);
     titleSpriteComponent.worldSpace = false;
+    titleSpriteComponent.layer = 1;
     ECSEngine::LocationComponent titleLocComp;
     titleLocComp.loc = {(windowSize.x - 598 * factor) / 2, windowSize.y*0.15f};
 
@@ -65,6 +67,7 @@ void startMenu(Engine& engine, std::string resourcePath) {
     spriteCompButton1.textureID = unselectedButtonid;
     spriteCompButton1.bounds = ECSEngine::Rect(ECSEngine::Point2D(10, 4), 360, 150);
     spriteCompButton1.worldSpace = false;
+    spriteCompButton1.layer = 1;
     ECSEngine::LocationComponent locCompButton1;
     locCompButton1.loc = {776 * factor, 477 * factor};
     scene->GetEntityManager().AddComponent<ECSEngine::SpriteComponent>(topButtonEntityid, spriteCompButton1);
@@ -74,6 +77,7 @@ void startMenu(Engine& engine, std::string resourcePath) {
     spriteCompButton2.textureID = unselectedButtonid;
     spriteCompButton2.bounds = ECSEngine::Rect(ECSEngine::Point2D(10, 4), 360, 150);
     spriteCompButton2.worldSpace = false;
+    spriteCompButton2.layer = 1;
     ECSEngine::LocationComponent locCompButton2;
     locCompButton2.loc = {776 * factor, 765 * factor};
     scene->GetEntityManager().AddComponent<ECSEngine::SpriteComponent>(bottomButtonEntityid,
@@ -85,6 +89,7 @@ void startMenu(Engine& engine, std::string resourcePath) {
     spriteCompText1.textureID = topText;
     spriteCompText1.bounds = ECSEngine::Rect(ECSEngine::Point2D(1, 155), 168, 65);
     spriteCompText1.worldSpace = false;
+    spriteCompText1.layer = 2;
     ECSEngine::LocationComponent locCompText1;
     locCompText1.loc = {(776.f + 180.f - 84.f) * factor, (477.f + 75.f - 32.5f) * factor};
     scene->GetSpriteManager().GetSprite(topText).setScale({factor, factor});
@@ -98,6 +103,7 @@ void startMenu(Engine& engine, std::string resourcePath) {
     spriteCompText2.textureID = bottomText;
     spriteCompText2.bounds = ECSEngine::Rect(ECSEngine::Point2D(1, 228), 259, 73);
     spriteCompText2.worldSpace = false;
+    spriteCompText2.layer = 2;
     ECSEngine::LocationComponent locCompText2;
     locCompText2.loc = {(776.f + 180.f - 129.5f) * factor, (765.f + 75.f - 36.5f) * factor};
     scene->GetSpriteManager().GetSprite(bottomText).setScale({factor, factor});

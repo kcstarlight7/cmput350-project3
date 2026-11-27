@@ -13,6 +13,7 @@ void pauseScreen(Engine& engine, std::string resourcePath) {
     pauseBgSpriteComp.textureID = pauseBgSprite;
     pauseBgSpriteComp.bounds = ECSEngine::Rect(ECSEngine::Point2D(0, 0), 1, 1);
     pauseBgSpriteComp.worldSpace = false;
+    pauseBgSpriteComp.layer = 0;
     ECSEngine::LocationComponent pauseBgLocComp;
     pauseBgLocComp.loc = {0, 0};
 
@@ -31,6 +32,7 @@ void pauseScreen(Engine& engine, std::string resourcePath) {
     titleSpriteComponent.textureID = titleSpriteid;
     titleSpriteComponent.bounds = ECSEngine::Rect(ECSEngine::Point2D(0, 0), 621, 169);
     titleSpriteComponent.worldSpace = false;
+    titleSpriteComponent.layer = 1;
     ECSEngine::LocationComponent titleLocComp;
     titleLocComp.loc = {(windowSize.x - 621 * factor) / 2, windowSize.y * 0.15f};
 
@@ -85,6 +87,7 @@ void pauseScreen(Engine& engine, std::string resourcePath) {
     spriteCompButton1.textureID = unselectedButtonid;
     spriteCompButton1.bounds = ECSEngine::Rect(ECSEngine::Point2D(10, 4), 360, 150);
     spriteCompButton1.worldSpace = false;
+    spriteCompButton1.layer = 1;
     ECSEngine::LocationComponent locCompButton1;
     //locCompButton1.loc = {menuComp.startTopLeft.x * factor, menuComp.startTopLeft.y * factor};
     locCompButton1.loc = {776 * factor, 388 * factor};
@@ -97,6 +100,7 @@ void pauseScreen(Engine& engine, std::string resourcePath) {
     spriteCompButton2.textureID = unselectedButtonid;
     spriteCompButton2.bounds = ECSEngine::Rect(ECSEngine::Point2D(10, 4), 360, 150);
     spriteCompButton2.worldSpace = false;
+    spriteCompButton2.layer = 1;
     ECSEngine::LocationComponent locCompButton2;
     locCompButton2.loc = {776 * factor, 
                           (menuComp.startTopLeft.y + menuComp.spacingPx) * factor};
@@ -109,6 +113,7 @@ void pauseScreen(Engine& engine, std::string resourcePath) {
     spriteCompButton3.textureID = unselectedButtonid;
     spriteCompButton3.bounds = ECSEngine::Rect(ECSEngine::Point2D(10, 4), 360, 150);
     spriteCompButton3.worldSpace = false;
+    spriteCompButton3.layer = 1;
     ECSEngine::LocationComponent locCompButton3;
     locCompButton3.loc = {menuComp.startTopLeft.x * factor,
                           (menuComp.startTopLeft.y + (menuComp.spacingPx * 2)) * factor};
@@ -121,6 +126,7 @@ void pauseScreen(Engine& engine, std::string resourcePath) {
     spriteCompText1.textureID = text1Sprite;
     spriteCompText1.bounds = ECSEngine::Rect(ECSEngine::Point2D(0, 1), 258, 65);
     spriteCompText1.worldSpace = false;
+    spriteCompText1.layer = 2;
     ECSEngine::LocationComponent locCompText1;
     locCompText1.loc = {(menuComp.startTopLeft.x + 180.f - 129.f) * factor,
                         (menuComp.startTopLeft.y + 75.f - 32.5f) * factor};
@@ -135,6 +141,7 @@ void pauseScreen(Engine& engine, std::string resourcePath) {
     spriteCompText2.textureID = text2Sprite;
     spriteCompText2.bounds = ECSEngine::Rect(ECSEngine::Point2D(0, 71), 250, 69);
     spriteCompText2.worldSpace = false;
+    spriteCompText2.layer = 2;
     ECSEngine::LocationComponent locCompText2;
     locCompText2.loc = {(menuComp.startTopLeft.x + 180.f - 125.f) * factor,
                         ((menuComp.startTopLeft.y + menuComp.spacingPx) + 75.f - 34.5f) * factor};
@@ -149,6 +156,7 @@ void pauseScreen(Engine& engine, std::string resourcePath) {
     spriteCompText3.textureID = text3Sprite;
     spriteCompText3.bounds = ECSEngine::Rect(ECSEngine::Point2D(0, 142), 133, 71);
     spriteCompText3.worldSpace = false;
+    spriteCompText3.layer = 2;
     ECSEngine::LocationComponent locCompText3;
     locCompText3.loc = {(menuComp.startTopLeft.x + 180.f - 66.5f) * factor,
         ((menuComp.startTopLeft.y + (menuComp.spacingPx * 2)) + 75.f - 35.5f) * factor};
