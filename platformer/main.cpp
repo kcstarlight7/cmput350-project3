@@ -42,7 +42,7 @@ using Engine = ECSEngine::ECSEngine<COMPONENTS>;
 
 #include "chart.cpp"
 #include "menu.cpp"
-
+#include "pause.cpp"
 
 static void LoadMap(Engine& engine, const std::string& path, const std::string& file) {
     std::filesystem::path fullPath = std::filesystem::path(gResourcePath) / file;
@@ -213,6 +213,9 @@ int main(int argc, char* argv[]) {
     // Engine test code
     //Engine engine(1024, 768, "Test Engine");
     std::shared_ptr<Engine> engine = std::make_shared<Engine>(1024, 576, "Test Engine");
+    
+    //startMenu(*engine, gResourcePath);
+    //pauseScreen(*engine, gResourcePath);
     chartScene(*engine, gResourcePath + "charts/test/chart.txt");
 
     engine->Run();
