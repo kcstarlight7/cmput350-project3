@@ -25,24 +25,47 @@ public:
         EntityManager<Components...>& entityManager = engine->GetEntityManager();
         WindowManager& windowManager = engine->GetWindowManager();
         SpriteManager& spriteManager = engine->GetSpriteManager();
+
+        std::vector<std::vector<EntityID>> spriteInLayers(16);
+        // 16 layers? 
+        //0 furthest, 15 closest
+        //midpoint = 7
+        std::vector<uint8_t> layerCounts(16,0);
         
         for (auto iterator = entityManager.cbegin(); iterator != entityManager.cend(); ++iterator) {
             // loops through all entities
             auto currentID = iterator->GetID();
             if (entityManager.template HasComponent<SpriteComponent>(currentID) &&
                 entityManager.template HasComponent<LocationComponent>(currentID)) {
+
+                SpriteComponent& spriteComp = entityManager.GetComponent<SpriteComponent>(currentID);
+                //iterate through all sprites and sort into layers
+                // iterate through layers and draw sprites
+                spriteInLayers[spriteComp.layer].push_back(currentID);
+                layerCounts[spriteComp.layer]++;
+            }
+        }
+
+        for (int i = 0; i < 15; i++) {
+            for (uint8_t j = 0; j < layerCounts[i]; j++) {
+                EntityID drawingID = spriteInLayers[i][j];
+                // DRAWING
                 sf::VertexArray vertices(sf::PrimitiveType::Triangles);
-                
-                //append to vertex array
+
+                SpriteComponent& drawingSpriteComp =
+                    entityManager.GetComponent<SpriteComponent>(drawingID);
+                sf::Sprite& drawingSprite = spriteManager.GetSprite(drawingSpriteComp.textureID);
+
+                // append to vertex array
                 sf::Vertex topLeft;
-                sf::Vector2f location(entityManager.GetComponent<LocationComponent>(currentID).loc.x,
-                                      entityManager.GetComponent<LocationComponent>(currentID).loc.y);
-                //texcoords
-                sf::Sprite& sprite = spriteManager
-                                         .GetSprite(entityManager.GetComponent<SpriteComponent>(currentID).textureID);
-                sf::Vector2f texCoord(sprite.getTextureRect().position);
-                sf::Vector2f texSize(sprite.getTextureRect().size);
-                sf::Vector2f scaledSize(sprite.getGlobalBounds().size);
+                sf::Vector2f location(
+                    entityManager.GetComponent<LocationComponent>(drawingID).loc.x,
+                    entityManager.GetComponent<LocationComponent>(drawingID).loc.y);
+                // texcoords
+
+                sf::Vector2f texCoord(drawingSprite.getTextureRect().position);
+                sf::Vector2f texSize(drawingSprite.getTextureRect().size);
+                sf::Vector2f scaledSize(drawingSprite.getGlobalBounds().size);
 
                 sf::Vertex topRight;
                 sf::Vertex bottomLeft;
@@ -50,7 +73,7 @@ public:
 
                 topLeft.position = location;
                 topLeft.texCoords = texCoord;
-                
+
                 vertices.append(topLeft);
                 topRight.position = sf::Vector2f(location.x + scaledSize.x, location.y);
                 topRight.texCoords = sf::Vector2f(texCoord.x + texSize.x, texCoord.y);
