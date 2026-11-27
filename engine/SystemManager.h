@@ -5,7 +5,7 @@
 
 namespace ECSEngine {
 
-enum tSystemReturn { kContinue, kExit };
+enum tSystemReturn { kContinue, kExit, kPause };
 
 template <typename... Components>
 class EngineView;
