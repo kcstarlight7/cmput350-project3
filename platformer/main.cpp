@@ -215,8 +215,8 @@ int main(int argc, char* argv[]) {
     std::shared_ptr<Engine> engine = std::make_shared<Engine>(1024, 576, "Test Engine");
     
     //startMenu(*engine, gResourcePath);
-    //pauseScreen(*engine, gResourcePath);
-    chartScene(*engine, gResourcePath + "charts/test/chart.txt");
+    pauseScreen(*engine, gResourcePath);
+    //chartScene(*engine, gResourcePath + "charts/test/chart.txt");
 
     engine->Run();
     return 0;
