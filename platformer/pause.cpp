@@ -56,10 +56,11 @@ void pauseScreen(Engine& engine, std::string resourcePath) {
     scene->GetSpriteManager().GetSprite(selectedButtonid).setScale({factor, factor});
 
     ECSEngine::SpriteID text1Sprite = scene->GetSpriteManager().RegisterTexture(
-        resourcePath + "menu-resource.png", ECSEngine::Rect(ECSEngine::Point2D(1, 155), 168, 65));
+        resourcePath + "pause-resource.png", ECSEngine::Rect(ECSEngine::Point2D(0, 1), 258, 65));
     ECSEngine::SpriteID text2Sprite = scene->GetSpriteManager().RegisterTexture(
-        resourcePath + "menu-resource.png", ECSEngine::Rect(ECSEngine::Point2D(1, 228), 259, 73));
-    ECSEngine::SpriteID text3Sprite = text2Sprite;
+        resourcePath + "pause-resource.png", ECSEngine::Rect(ECSEngine::Point2D(0, 71), 250, 69));
+    ECSEngine::SpriteID text3Sprite = scene->GetSpriteManager().RegisterTexture(
+        resourcePath + "pause-resource.png", ECSEngine::Rect(ECSEngine::Point2D(0, 142), 133, 71));
 
     // MENU COMP SETUP
     ECSEngine::MenuComponent menuComp;
@@ -76,7 +77,7 @@ void pauseScreen(Engine& engine, std::string resourcePath) {
     menuComp.text.push_back(text3Sprite);
     menuComp.buttons[0] = unselectedButtonid;
     menuComp.buttons[1] = selectedButtonid;
-    menuComp.startTopLeft = {776, 388};
+    menuComp.startTopLeft = {776.f, 388.f};
     menuComp.spacingPx = 209;
     // MENU COMP SETUP END
 
@@ -85,7 +86,8 @@ void pauseScreen(Engine& engine, std::string resourcePath) {
     spriteCompButton1.bounds = ECSEngine::Rect(ECSEngine::Point2D(10, 4), 360, 150);
     spriteCompButton1.worldSpace = false;
     ECSEngine::LocationComponent locCompButton1;
-    locCompButton1.loc = {menuComp.startTopLeft.x * factor, menuComp.startTopLeft.y * factor};
+    //locCompButton1.loc = {menuComp.startTopLeft.x * factor, menuComp.startTopLeft.y * factor};
+    locCompButton1.loc = {776 * factor, 388 * factor};
     scene->GetEntityManager().AddComponent<ECSEngine::SpriteComponent>(button1Entity,
                                                                        spriteCompButton1);
     scene->GetEntityManager().AddComponent<ECSEngine::LocationComponent>(button1Entity,
@@ -96,7 +98,7 @@ void pauseScreen(Engine& engine, std::string resourcePath) {
     spriteCompButton2.bounds = ECSEngine::Rect(ECSEngine::Point2D(10, 4), 360, 150);
     spriteCompButton2.worldSpace = false;
     ECSEngine::LocationComponent locCompButton2;
-    locCompButton2.loc = {menuComp.startTopLeft.x * factor, 
+    locCompButton2.loc = {776 * factor, 
                           (menuComp.startTopLeft.y + menuComp.spacingPx) * factor};
     scene->GetEntityManager().AddComponent<ECSEngine::SpriteComponent>(button2Entity,
                                                                        spriteCompButton2);
@@ -114,47 +116,47 @@ void pauseScreen(Engine& engine, std::string resourcePath) {
                                                                        spriteCompButton3);
     scene->GetEntityManager().AddComponent<ECSEngine::LocationComponent>(button3Entity,
                                                                          locCompButton3);
-
+    // BUTTON TEXTS
     ECSEngine::SpriteComponent spriteCompText1;
     spriteCompText1.textureID = text1Sprite;
-    spriteCompText1.bounds = ECSEngine::Rect(ECSEngine::Point2D(1, 155), 168, 65);
+    spriteCompText1.bounds = ECSEngine::Rect(ECSEngine::Point2D(0, 1), 258, 65);
     spriteCompText1.worldSpace = false;
     ECSEngine::LocationComponent locCompText1;
-    locCompText1.loc = {(menuComp.startTopLeft.x + 180.f - 84.f) * factor,
+    locCompText1.loc = {(menuComp.startTopLeft.x + 180.f - 129.f) * factor,
                         (menuComp.startTopLeft.y + 75.f - 32.5f) * factor};
     scene->GetSpriteManager().GetSprite(text1Sprite).setScale({factor, factor});
-    scene->GetSpriteManager().GetSprite(text1Sprite).setOrigin({84.f, 32.5f});
-    scene->GetEntityManager().AddComponent<ECSEngine::SpriteComponent>(button1Entity,
+    scene->GetSpriteManager().GetSprite(text1Sprite).setOrigin({129.f, 32.5f});
+    scene->GetEntityManager().AddComponent<ECSEngine::SpriteComponent>(buttonText1Entity,
                                                                        spriteCompText1);
-    scene->GetEntityManager().AddComponent<ECSEngine::LocationComponent>(button1Entity,
+    scene->GetEntityManager().AddComponent<ECSEngine::LocationComponent>(buttonText1Entity,
                                                                          locCompText1);
 
     ECSEngine::SpriteComponent spriteCompText2;
     spriteCompText2.textureID = text2Sprite;
-    spriteCompText2.bounds = ECSEngine::Rect(ECSEngine::Point2D(1, 228), 259, 73);
+    spriteCompText2.bounds = ECSEngine::Rect(ECSEngine::Point2D(0, 71), 250, 69);
     spriteCompText2.worldSpace = false;
     ECSEngine::LocationComponent locCompText2;
-    locCompText2.loc = {(menuComp.startTopLeft.x + 180.f - 129.5f) * factor,
-                        ((menuComp.startTopLeft.y + menuComp.spacingPx) + 75.f - 36.5f) * factor};
+    locCompText2.loc = {(menuComp.startTopLeft.x + 180.f - 125.f) * factor,
+                        ((menuComp.startTopLeft.y + menuComp.spacingPx) + 75.f - 34.5f) * factor};
     scene->GetSpriteManager().GetSprite(text2Sprite).setScale({factor, factor});
-    scene->GetSpriteManager().GetSprite(text2Sprite).setOrigin({129.5f, 36.5f});
-    scene->GetEntityManager().AddComponent<ECSEngine::SpriteComponent>(button2Entity,
+    scene->GetSpriteManager().GetSprite(text2Sprite).setOrigin({125.f, 34.5f});
+    scene->GetEntityManager().AddComponent<ECSEngine::SpriteComponent>(buttonText2Entity,
                                                                        spriteCompText2);
-    scene->GetEntityManager().AddComponent<ECSEngine::LocationComponent>(button2Entity,
+    scene->GetEntityManager().AddComponent<ECSEngine::LocationComponent>(buttonText2Entity,
                                                                          locCompText2);
 
     ECSEngine::SpriteComponent spriteCompText3;
     spriteCompText3.textureID = text3Sprite;
-    spriteCompText3.bounds = ECSEngine::Rect(ECSEngine::Point2D(1, 228), 259, 73);
+    spriteCompText3.bounds = ECSEngine::Rect(ECSEngine::Point2D(0, 142), 133, 71);
     spriteCompText3.worldSpace = false;
     ECSEngine::LocationComponent locCompText3;
-    locCompText3.loc = {(menuComp.startTopLeft.x + 180.f - 84.f) * factor,
-        ((menuComp.startTopLeft.y + (menuComp.spacingPx * 2)) + 75.f - 32.5f) * factor};
+    locCompText3.loc = {(menuComp.startTopLeft.x + 180.f - 66.5f) * factor,
+        ((menuComp.startTopLeft.y + (menuComp.spacingPx * 2)) + 75.f - 35.5f) * factor};
     scene->GetSpriteManager().GetSprite(text3Sprite).setScale({factor, factor});
-    scene->GetSpriteManager().GetSprite(text3Sprite).setOrigin({84.f, 32.5f});
-    scene->GetEntityManager().AddComponent<ECSEngine::SpriteComponent>(button3Entity,
+    scene->GetSpriteManager().GetSprite(text3Sprite).setOrigin({66.5f, 35.5f});
+    scene->GetEntityManager().AddComponent<ECSEngine::SpriteComponent>(buttonText3Entity,
                                                                        spriteCompText3);
-    scene->GetEntityManager().AddComponent<ECSEngine::LocationComponent>(button3Entity,
+    scene->GetEntityManager().AddComponent<ECSEngine::LocationComponent>(buttonText3Entity,
                                                                          locCompText3);
     // COMPLETE ADDING BUTTONS
     
