@@ -22,15 +22,17 @@ public:
     }
 
     tSystemReturn Run(SceneView<Components...>* engine) override { 
+        uint8_t layers = 16;
+        // 16 layers?
+        // 0 furthest, 15 closest
+        // midpoint = 7
+
         EntityManager<Components...>& entityManager = engine->GetEntityManager();
         WindowManager& windowManager = engine->GetWindowManager();
         SpriteManager& spriteManager = engine->GetSpriteManager();
 
-        std::vector<std::vector<EntityID>> spriteInLayers(16);
-        // 16 layers? 
-        //0 furthest, 15 closest
-        //midpoint = 7
-        std::vector<uint8_t> layerCounts(16,0);
+        std::vector<std::vector<EntityID>> spriteInLayers(layers);
+        std::vector<uint8_t> layerCounts(layers, 0);
         
         for (auto iterator = entityManager.cbegin(); iterator != entityManager.cend(); ++iterator) {
             // loops through all entities
@@ -46,7 +48,7 @@ public:
             }
         }
 
-        for (int i = 0; i < 15; i++) {
+        for (int i = 0; i < layerCounts.size(); i++) {
             for (uint8_t j = 0; j < layerCounts[i]; j++) {
                 EntityID drawingID = spriteInLayers[i][j];
                 // DRAWING
