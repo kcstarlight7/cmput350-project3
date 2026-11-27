@@ -96,9 +96,58 @@ void chartScene(Engine& engine, std::string chartPath) {
 
         chartComp.data.push_back(note);
     }
-    ECSEngine::EntityID noteSpawner = scene->GetEntityManager().CreateEntity("noteSpawner");
-    scene->GetEntityManager().AddComponent<ECSEngine::ChartComponent>(noteSpawner, chartComp);
 
+    chartComp.noteTexID = scene->GetSpriteManager().RegisterSolidColorTexture(sf::Color::Cyan);
+
+    sf::Vector2f windowSize(scene->GetWindowManager().GetWindowBounds().width,
+                            scene->GetWindowManager().GetWindowBounds().height);
+
+    // spawner creation
+    ECSEngine::EntityID noteSpawner = scene->GetEntityManager().CreateEntity("noteSpawner");
+
+    ECSEngine::LocationComponent noteSpawnerLoc;
+    noteSpawnerLoc.loc = ECSEngine::Point2D((windowSize.x / 2) - ((windowSize.x * 0.6) / 2), 0);
+
+    ECSEngine::SpriteComponent noteSpawnerSprite;
+    noteSpawnerSprite.worldSpace = true;
+    noteSpawnerSprite.bounds = ECSEngine::Rect(ECSEngine::Point2D(0, 0), windowSize.x * 0.6, 20);
+    noteSpawnerSprite.textureID =
+        scene->GetSpriteManager().RegisterSolidColorTexture(sf::Color::Blue);
+    scene->GetSpriteManager().ResizeAndGetColorSprite(noteSpawnerSprite.textureID,
+                                                      ECSEngine::Point2D(windowSize.x * 0.6, 20.f));
+
+    scene->GetEntityManager().AddComponent<ECSEngine::ChartComponent>(noteSpawner, chartComp);
+    scene->GetEntityManager().AddComponent<ECSEngine::LocationComponent>(noteSpawner, noteSpawnerLoc);
+    scene->GetEntityManager().AddComponent<ECSEngine::SpriteComponent>(noteSpawner, noteSpawnerSprite);
+
+    // judgement bar creation
+    ECSEngine::EntityID judgeLine = scene->GetEntityManager().CreateEntity("judgeLine");
+
+    ECSEngine::LocationComponent judgeLineLoc;
+    judgeLineLoc.loc = ECSEngine::Point2D((windowSize.x / 2) - ((windowSize.x * 0.6) / 2), windowSize.y * 0.8f);
+
+    ECSEngine::SpriteComponent judgeLineSprite;
+    judgeLineSprite.worldSpace = true;
+    judgeLineSprite.bounds = ECSEngine::Rect(ECSEngine::Point2D(0, 0), windowSize.x * 0.6, 5);
+    judgeLineSprite.textureID =
+        scene->GetSpriteManager().RegisterSolidColorTexture(sf::Color::Yellow);
+    scene->GetSpriteManager().ResizeAndGetColorSprite(judgeLineSprite.textureID,
+                                                      ECSEngine::Point2D(windowSize.x * 0.6, 5));
+
+    ECSEngine::CollisionComponent judgeLineCollision;
+    judgeLineCollision.collisionBox =
+        ECSEngine::Rect(ECSEngine::Point2D(0, 0), windowSize.x * 0.6, 5);
+
+    scene->GetEntityManager().AddComponent<ECSEngine::LocationComponent>(judgeLine,
+                                                                         judgeLineLoc);
+    scene->GetEntityManager().AddComponent<ECSEngine::SpriteComponent>(judgeLine, judgeLineSprite);
+    scene->GetEntityManager().AddComponent<ECSEngine::CollisionComponent>(judgeLine, judgeLineCollision);
+
+
+    scene->GetSystemManager().AddSystem(std::make_unique<ECSEngine::SpriteSystem<COMPONENTS>>());
+    scene->GetSystemManager().AddSystem(std::make_unique<ECSEngine::MovementSystem<COMPONENTS>>());
     scene->GetSystemManager().AddSystem(std::make_unique<ECSEngine::ChartSystem<COMPONENTS>>());
+    scene->GetSystemManager().AddSystem(std::make_unique<ECSEngine::CollisionSystem<COMPONENTS>>());
+
     engine.AddScene(scene);
 }

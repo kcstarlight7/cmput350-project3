@@ -33,14 +33,6 @@ public:
                 if (curIDCollisionComp.staticEntity) {
                     continue;
                 }
-                uint8_t soundTrigger = 0;
-                if (curIDCollisionComp.onGround == 0) {
-                    soundTrigger = 1;
-                }
-                curIDCollisionComp.onCeiling = 0;
-                curIDCollisionComp.onGround = 0;
-                curIDCollisionComp.onLeftWall = 0;
-                curIDCollisionComp.onRightWall = 0;
 
                 LocationComponent& curIDLocationComp =
                     entityManager.template GetComponent<LocationComponent>(currentID);
@@ -67,136 +59,9 @@ public:
                         Rect otherIDCollisionBox = otherIDCollisionComp.collisionBox;
                         otherIDCollisionBox.topLeft += otherIDLocationComp.loc;
 
-                        /*
-                        if (!ComputeCollision(ent1CollisionBox,
-                                              ent2CollisionBox)) {  // return if not collide
-                            continue;
-                        }*/
-                        // Check for overlaps, mark in collision component (left/top/right/bottom)
-
                         bool collide = ComputeCollision(curIDCollisionBox, otherIDCollisionBox);
                         if (collide) {
-                            if (entityManager.GetEntityType(currentID) == "player" &&
-                                entityManager.GetEntityType(otherID) == "Star") {
-                                entityManager.template GetComponent<ScoreComponent>(currentID)
-                                    .score += 10;
-                                entityManager.RemoveEntity(otherID);
-                            }
-
-                            if (curIDCollisionBox.topLeft.y + curIDCollisionBox.height >
-                                    otherIDCollisionBox.topLeft.y &&
-                                curIDCollisionBox.topLeft.y < otherIDCollisionBox.topLeft.y) {
-                                float curBoxMidpt =
-                                    curIDCollisionBox.topLeft.x + curIDCollisionBox.width / 2;
-                                float otherBoxMidpt =
-                                    otherIDCollisionBox.topLeft.x + otherIDCollisionBox.width / 2;
-
-                                if (std::abs(otherBoxMidpt - curBoxMidpt) <
-                                    otherIDCollisionBox.width * 0.8f) {
-                                    curIDCollisionComp.onGround = 1;
-
-                                    entityManager
-                                        .template GetComponent<MovementComponent>(currentID)
-                                        .jumpCount = 0;
-
-                                    if (curIDPrevCollisionBox.topLeft.y <
-                                        curIDCollisionBox.topLeft.y) {
-                                        if (otherIDCollisionComp.staticEntity) {
-                                            curIDLocationComp.loc.y -=
-                                                curIDLocationComp.loc.y + curIDCollisionBox.height -
-                                                otherIDCollisionBox.topLeft.y;
-                                        }
-                                    }
-                                }
-                            }
-
-                            if (curIDCollisionBox.topLeft.y >
-                                otherIDCollisionBox.topLeft.y + otherIDCollisionBox.height * 0.8f) {
-                                float curBoxMidpt =
-                                    curIDCollisionBox.topLeft.x + curIDCollisionBox.width / 2;
-                                float otherBoxMidpt =
-                                    otherIDCollisionBox.topLeft.x + otherIDCollisionBox.width / 2;
-
-                                if (std::abs(otherBoxMidpt - curBoxMidpt) <
-                                    otherIDCollisionBox.width) {
-                                    curIDCollisionComp.onCeiling = 1;
-                                }
-                            } else
-
-                                if (curIDCollisionBox.topLeft.y + curIDCollisionBox.height >
-                                    otherIDCollisionBox.topLeft.y +
-                                        otherIDCollisionBox.height) {  // if at level with other
-                                if (curIDPrevCollisionBox.topLeft.x < curIDCollisionBox.topLeft.x) {
-                                    curIDCollisionComp.onRightWall = 1;
-                                    entityManager
-                                        .template GetComponent<MovementComponent>(currentID)
-                                        .jumpCount = 0;
-
-                                    if (otherIDCollisionComp.staticEntity) {
-                                        curIDLocationComp.loc.x -= curIDLocationComp.loc.x +
-                                                                   curIDCollisionBox.width -
-                                                                   otherIDCollisionBox.topLeft.x;
-                                    }
-                                }
-
-                                if (curIDPrevCollisionBox.topLeft.x > curIDCollisionBox.topLeft.x) {
-                                    curIDCollisionComp.onLeftWall = 1;
-                                    entityManager
-                                        .template GetComponent<MovementComponent>(currentID)
-                                        .jumpCount = 0;
-
-                                    if (otherIDCollisionComp.staticEntity) {
-                                        curIDLocationComp.loc.x -= curIDLocationComp.loc.x -
-                                                                   (otherIDCollisionBox.topLeft.x +
-                                                                    otherIDCollisionBox.width);
-                                    }
-                                }
-                            }
-
-                            if (entityManager.GetEntityType(currentID) == "player" &&
-                                entityManager.GetEntityType(otherID) == "Star") {
-                                entityManager.template GetComponent<ScoreComponent>(currentID)
-                                    .score += 10;
-                                entityManager.RemoveEntity(otherID);
-                                engine->GetSoundManager().GetSound("sfx_gem").play();
-                            }
-
-                            if (entityManager.GetEntityType(currentID) == "player") {
-                                CameraShake& camShakeComp =
-                                    entityManager.template GetComponent<CameraShake>(currentID);
-
-                                if ((std::abs(curIDCollisionBox.topLeft.y -
-                                              curIDPrevCollisionBox.topLeft.y) > 10 &&
-                                     entityManager.GetEntityType(otherID) == "MapPart") ||
-                                    curIDCollisionComp.onCeiling) {
-                                    camShakeComp.frameLimit = 15;
-                                    camShakeComp.offset.y = 3.f;
-
-                                    if (curIDCollisionComp.onGround) {
-                                        engine->GetSoundManager().GetSound("snow_footstep").play();
-                                    }
-                                } else if (std::abs(curIDCollisionBox.topLeft.x -
-                                                    curIDPrevCollisionBox.topLeft.x) > 10 &&
-                                           entityManager.GetEntityType(otherID) == "Wall") {
-                                    camShakeComp.frameLimit = 15;
-                                    camShakeComp.offset.x = 3.f;
-                                }
-                            }
-
-                            if (entityManager.GetEntityType(currentID) == "player" &&
-                                entityManager.GetEntityType(otherID) == "Spike") {
-                                if (entityManager.template HasComponent<RespawnComponent>(
-                                        currentID)) {
-                                    curIDLocationComp.loc =
-                                        entityManager
-                                            .template GetComponent<RespawnComponent>(currentID)
-                                            .loc +
-                                        Point2D(0.f, 50.f);
-                                    entityManager
-                                        .template GetComponent<MovementComponent>(currentID)
-                                        .velocity = {0.f, 0.f};
-                                }
-                            }
+                            
                         }
 
                         // draw red rect
