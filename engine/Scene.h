@@ -15,6 +15,7 @@ public:
     virtual SystemManager<Components...>& GetSystemManager() = 0;
     virtual SpriteManager& GetSpriteManager() = 0;
     virtual SoundManager& GetSoundManager() = 0;
+    virtual ShaderManager& GetShaderManager() = 0;
     virtual tSceneReturn DoOneFrame(EngineView<Components...>* engine) = 0;
 };
 
@@ -26,6 +27,7 @@ public:
     WindowManager& GetWindowManager() override { return mWindowManager; }
     SpriteManager& GetSpriteManager() override { return mSpriteManager; }
     SoundManager& GetSoundManager() override { return mSoundManager; }
+    ShaderManager& GetShaderManager() override { return mShaderManager; }
     SystemManager<Components...>& GetSystemManager() override { return mSystemManager; }
     [[nodiscard]] tSceneReturn DoOneFrame(EngineView<Components...>* engine) override {
         if (mSystemManager.Run(engine, this) == kExit) return kSceneDone;
@@ -42,6 +44,8 @@ private:
     WindowManager mWindowManager;
     SpriteManager mSpriteManager;
     SoundManager mSoundManager;
+    ShaderManager mShaderManager;
+    
 };
 
 }  // namespace ECSEngine

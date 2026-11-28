@@ -18,6 +18,10 @@ public:
     Rect bounds;
     bool worldSpace;  // If false, this sprite is drawn in screen space instead of world space
     uint8_t layer = 16;    // Drawing layer, lower layers drawn first
+    uint8_t shaderExist = 0;
+    std::string shaderName;
+    std::chrono::steady_clock::time_point timerStart = std::chrono::steady_clock::now();
+
 private:
 };
 

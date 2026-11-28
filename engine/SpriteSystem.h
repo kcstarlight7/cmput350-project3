@@ -30,6 +30,7 @@ public:
         EntityManager<Components...>& entityManager = engine->GetEntityManager();
         WindowManager& windowManager = engine->GetWindowManager();
         SpriteManager& spriteManager = engine->GetSpriteManager();
+        ShaderManager& shaderManager = engine->GetShaderManager();
 
         std::vector<std::vector<EntityID>> spriteInLayers(layers);
         std::vector<uint8_t> layerCounts(layers, 0);
@@ -57,6 +58,19 @@ public:
                 SpriteComponent& drawingSpriteComp =
                     entityManager.GetComponent<SpriteComponent>(drawingID);
                 sf::Sprite& drawingSprite = spriteManager.GetSprite(drawingSpriteComp.textureID);
+
+                if (drawingSpriteComp.shaderExist) {
+                    std::chrono::duration<float> duration(std::chrono::steady_clock::now() - drawingSpriteComp.timerStart);
+                    float timeElapsed =
+                        std::chrono::duration_cast<std::chrono::milliseconds>(duration).count();
+                    
+                    shaderManager.GetShader(drawingSpriteComp.shaderName)
+                        ->setUniform("resolution", sf::Vector2f(windowManager.GetWindowBounds().width, windowManager.GetWindowBounds().height));
+                    shaderManager.GetShader(drawingSpriteComp.shaderName)
+                        ->setUniform("time", timeElapsed);
+                    windowManager.GetWindow()->draw(drawingSprite, shaderManager.GetShader(drawingSpriteComp.shaderName));
+                    continue;
+                }
 
                 // append to vertex array
                 sf::Vertex topLeft;
