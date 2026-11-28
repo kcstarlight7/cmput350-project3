@@ -5,6 +5,7 @@
 #include "EntityManager.h"
 #include "SpriteManager.h"
 #include "SoundManager.h"
+#include "ShaderManager.h"
 #include "Scene.h"
 #include "ECSEngine.h"
 
