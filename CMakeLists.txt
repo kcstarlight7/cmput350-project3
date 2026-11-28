@@ -16,5 +16,7 @@ function(enable_warnings target)
     endif()
 endfunction()
 
+configure_file(${CMAKE_SOURCE_DIR}/platformer/menu.frag ${CMAKE_BINARY_DIR}/platformer/menu.frag COPYONLY)
+
 add_subdirectory(engine)
 add_subdirectory(platformer)

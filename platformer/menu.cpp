@@ -5,19 +5,24 @@ void startMenu(Engine& engine, std::string resourcePath) {
     float factor = windowSize.x / 1920;
     // scene->GetSoundManager().RegisterSound(resourcePath + "menu-bgm.ogg", "menu-bgm");
     // scene->GetSoundManager().RegisterSound(resourcePath + "menu-interact.ogg", "menu-interact");
-    
+
     // ADDING MENU BACKGROUND
     ECSEngine::EntityID bgEntityid = scene->GetEntityManager().CreateEntity("MenuBackground");
-    ECSEngine::SpriteID bgSpriteid = scene->GetSpriteManager().RegisterTexture(
-        resourcePath + "menu-background.png",
-        ECSEngine::Rect(ECSEngine::Point2D(0, 0), 1920, 1080));
-    scene->GetSpriteManager().GetSprite(bgSpriteid).setScale({factor, factor});
+
+    ECSEngine::SpriteID bgSpriteid = scene->GetSpriteManager()
+                                         .RegisterSolidColorTexture(sf::Color::White);
+    scene->GetSpriteManager().ResizeAndGetColorSprite(
+        bgSpriteid, ECSEngine::Point2D(windowSize.x, windowSize.y));
+    scene->GetShaderManager().RegisterShader("menu.frag", "MainMenu");
+
     ECSEngine::SpriteComponent spriteComponent;
     spriteComponent.textureID = bgSpriteid;
     spriteComponent.bounds =
         ECSEngine::Rect(ECSEngine::Point2D(0, 0), 1920, 1080);
     spriteComponent.worldSpace = false;
     spriteComponent.layer = 0;
+    spriteComponent.shaderExist = 1;
+    spriteComponent.shaderName = "MainMenu";
     ECSEngine::LocationComponent locComp;
     locComp.loc = {0, 0};
     
